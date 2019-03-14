@@ -1,6 +1,58 @@
+//! Vault Client
+//!
+//! This is a thin wrapper around the HTTP API for [Vault](https://www.vaultproject.io/).
+#![allow(
+    legacy_directory_ownership,
+    missing_copy_implementations,
+    missing_debug_implementations,
+    unknown_lints
+)]
+#![deny(
+    const_err,
+    dead_code,
+    deprecated,
+    exceeding_bitshifts,
+    improper_ctypes,
+    missing_docs,
+    mutable_transmutes,
+    no_mangle_const_items,
+    non_camel_case_types,
+    non_shorthand_field_patterns,
+    non_upper_case_globals,
+    overflowing_literals,
+    path_statements,
+    plugin_as_library,
+    stable_features,
+    trivial_casts,
+    trivial_numeric_casts,
+    unconditional_recursion,
+    unknown_crate_types,
+    unreachable_code,
+    unused_allocation,
+    unused_assignments,
+    unused_attributes,
+    unused_comparisons,
+    unused_extern_crates,
+    unused_features,
+    unused_imports,
+    unused_import_braces,
+    unused_qualifications,
+    unused_must_use,
+    unused_mut,
+    unused_parens,
+    unused_results,
+    unused_unsafe,
+    unused_variables,
+    variant_size_differences,
+    warnings,
+    while_true
+)]
+#![doc(test(attr(allow(unused_variables), deny(warnings))))]
+
 mod error;
 
 pub use error::Error;
+pub use reqwest::Method;
 
 use std::collections::HashMap;
 use std::fmt::{self, Debug};
@@ -25,7 +77,7 @@ impl Deref for Secret {
     }
 }
 
-impl fmt::Debug for Secret {
+impl Debug for Secret {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "***")
     }
@@ -61,7 +113,7 @@ pub struct Client {
 /// Generic Vault Response
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
-#[allow(clippy::large_enum_variant)]
+#[allow(clippy::large_enum_variant, variant_size_differences,)]
 pub enum Response {
     /// An error response
     Error {
@@ -70,6 +122,8 @@ pub enum Response {
     },
     /// A successful response
     Response(ResponseData),
+    /// An Empty (succesful) Response. Usually returned from `DELETE` operations
+    Empty,
 }
 
 /// Vault General Response Data
@@ -156,7 +210,7 @@ impl Client {
         })
     }
 
-    /// Create a new API client from an existing Token
+    /// Create a new Vault Client.
     ///
     /// You can optionally provide a `reqwest::Client` if you have specific needs like custom root
     /// CA certificate or require client authentication
@@ -177,6 +231,14 @@ impl Client {
         Ok(client)
     }
 
+    /// Create a client from environment variables. You can provide alternative sources of
+    /// the parameters with the optional arguments
+    ///
+    /// The vnrionment variables are:
+    ///
+    /// - `VAULT_ADDR`: Vault Address
+    /// - `VAULT_TOKEN`: Vault Token
+    /// - `VAULT_CACERT`: Path to the CA Certificate for Vault
     pub fn from_environment<S1, S2, S3>(
         address: Option<S1>,
         token: Option<S2>,
@@ -194,7 +256,7 @@ impl Client {
         let root_ca = Self::environment_variable_or_provided("VAULT_CACERT", ca_cert);
 
         let client = if let Some(cert) = root_ca {
-            let cert = Certificate::from_pem(&crate::read_file(cert)?)?;
+            let cert = Certificate::from_pem(&read_file(cert)?)?;
 
             Some(ClientBuilder::new().add_root_certificate(cert).build()?)
         } else {
@@ -249,18 +311,72 @@ impl Client {
         Ok(())
     }
 
-    /// Read a generic Path from Vault
-    pub fn read(&self, path: &str) -> Result<Response, Error> {
+    fn build_request<S: AsRef<str>>(
+        &self,
+        path: S,
+        method: Method,
+    ) -> Result<reqwest::RequestBuilder, Error> {
         let vault_address = url::Url::parse(self.address())?;
-        let vault_address = vault_address.join(&format!("/v1/{}", path))?;
+        let vault_address = vault_address.join(&format!("/v1/{}", path.as_ref()))?;
 
-        let request = self
+        Ok(self
             .client
-            .get(vault_address)
-            .header("X-Vault-Token", self.token.as_str())
+            .request(method, vault_address)
+            .header("X-Vault-Token", self.token.as_str()))
+    }
+
+    /// Read a generic Path from Vault
+    pub fn read(&self, path: &str, method: Method) -> Result<Response, Error> {
+        let request = self.build_request(path, method)?.build()?;
+
+        Self::execute_request(&self.client, request)
+    }
+
+    /// Write to a generic path to Vault
+    pub fn write<T: Serialize>(
+        &self,
+        path: &str,
+        payload: &T,
+        method: Method,
+    ) -> Result<Response, Error> {
+        let request = self.build_request(path, method)?.json(payload).build()?;
+
+        Self::execute_request(&self.client, request)
+    }
+
+    /// Get a generic path from Vault
+    pub fn get(&self, path: &str) -> Result<Response, Error> {
+        self.read(path, Method::GET)
+    }
+
+    /// List a generic path from Vault
+    pub fn list(&self, path: &str) -> Result<Response, Error> {
+        self.read(path, Method::from_bytes(b"LIST").expect("To not fail"))
+    }
+
+    /// Post to a generic path to Vault
+    pub fn post<T: Serialize>(&self, path: &str, payload: &T) -> Result<Response, Error> {
+        let request = self
+            .build_request(path, Method::POST)?
+            .json(payload)
             .build()?;
 
         Self::execute_request(&self.client, request)
+    }
+
+    /// Put to a generic path to Vault
+    pub fn put<T: Serialize>(&self, path: &str, payload: &T) -> Result<Response, Error> {
+        let request = self
+            .build_request(path, Method::PUT)?
+            .json(payload)
+            .build()?;
+
+        Self::execute_request(&self.client, request)
+    }
+
+    /// Delete a Path from Vault
+    pub fn delete(&self, path: &str) -> Result<Response, Error> {
+        self.read(path, Method::DELETE)
     }
 
     /// Revoke the Vault token itself
@@ -300,10 +416,12 @@ impl Drop for Client {
 }
 
 impl Response {
-    pub fn ok(self) -> Result<ResponseData, Error> {
+    /// Transform the Response into [`Result`]
+    pub fn ok(self) -> Result<Option<ResponseData>, Error> {
         match self {
             Response::Error { errors } => Err(Error::VaultError(errors.join("; "))),
-            Response::Response(data) => Ok(data),
+            Response::Response(data) => Ok(Some(data)),
+            Response::Empty => Ok(None),
         }
     }
 }
@@ -313,7 +431,7 @@ fn read_file<P: AsRef<std::path::Path>>(path: P) -> Result<Vec<u8>, Error> {
     let size = metadata.len();
     let mut file = File::open(&path)?;
     let mut buffer = Vec::with_capacity(size as usize);
-    file.read_to_end(&mut buffer)?;
+    let _ = file.read_to_end(&mut buffer)?;
     Ok(buffer)
 }
 
@@ -333,6 +451,12 @@ pub(crate) mod tests {
     #[test]
     fn can_read_self_capabilities() {
         let client = vault_client();
-        client.read("/auth/token/lookup-self").unwrap();
+        let _ = client.get("/auth/token/lookup-self").unwrap();
+    }
+
+    #[test]
+    fn can_list_kv() {
+        let client = vault_client();
+        let _ = client.list("secrets").unwrap();
     }
 }

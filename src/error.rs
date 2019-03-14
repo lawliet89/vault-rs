@@ -21,14 +21,19 @@ pub enum Error {
     /// Errors deserializing JSON
     #[fail(display = "Error deserializing JSON: {}", _0)]
     JsonError(#[cause] serde_json::Error),
+    /// Vault address is missing
     #[fail(display = "Vault Address is missing")]
     MissingAddress,
+    /// Vault token is missing
     #[fail(display = "Vault Token is missing")]
     MissingToken,
+    /// IO Error
     #[fail(display = "{}", _0)]
     IoError(#[cause] std::io::Error),
+    /// Error decoding bytes to UTF-8
     #[fail(display = "Error converting bytes to UTF-8: {}", _0)]
     Utf8Error(#[cause] std::string::FromUtf8Error),
+    /// Vault Error
     #[fail(display = "Vault Error: {}", _0)]
     VaultError(String),
 }
