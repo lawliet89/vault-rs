@@ -50,6 +50,7 @@
 #![doc(test(attr(allow(unused_variables), deny(warnings))))]
 
 mod error;
+mod utils;
 
 pub mod secrets;
 pub mod sys;

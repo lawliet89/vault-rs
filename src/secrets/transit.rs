@@ -128,6 +128,24 @@ pub struct ConfigureKey {
     pub allow_plaintext_backup: Option<bool>,
 }
 
+#[derive(Serialize, Debug, Eq, PartialEq, Default)]
+/// A single item to be encrypted
+pub struct EncryptPayload<'a, 'b, 'c> {
+    /// Plaintext to be encrypted
+    #[serde(serialize_with = "crate::utils::serialize_bytes")]
+    pub plaintext: &'a [u8],
+    /// Nonce, if any.
+    /// This must be provided if convergent encryption is enabled for this key and the
+    /// key was generated with Vault 0.6.1. Not required for keys created in 0.6.2+.
+    /// The value must be exactly 96 bits (12 bytes) long and the user must ensure that for
+    /// any given context (and thus, any given encryption key) this nonce value is never reused.
+    #[serde(serialize_with = "crate::utils::serialize_option_bytes")]
+    pub nonce: Option<&'b [u8]>,
+    /// Context, if any. This is required if key derivation is enabled for this key.
+    #[serde(serialize_with = "crate::utils::serialize_option_bytes")]
+    pub context: Option<&'c [u8]>,
+}
+
 impl Default for KeyType {
     fn default() -> Self {
         KeyType::AES256GCM96
