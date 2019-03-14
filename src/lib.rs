@@ -113,7 +113,7 @@ pub struct Client {
 /// Generic Vault Response
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
-#[allow(clippy::large_enum_variant, variant_size_differences,)]
+#[allow(clippy::large_enum_variant, variant_size_differences)]
 pub enum Response {
     /// An error response
     Error {
@@ -184,6 +184,45 @@ pub enum TokenType {
     Service,
     /// Short lived batch tokens
     Batch,
+}
+
+/// Trait implementing the basic API operations for Vault
+pub trait Vault {
+    /// Read a generic Path from Vault
+    fn read(&self, path: &str, method: Method) -> Result<Response, Error>;
+
+    /// Write to a generic Path in Vault.
+    fn write<T: Serialize>(
+        &self,
+        path: &str,
+        payload: &T,
+        method: Method,
+    ) -> Result<Response, Error>;
+
+    /// Convenience method to Get a generic path from Vault
+    fn get(&self, path: &str) -> Result<Response, Error> {
+        self.read(path, Method::GET)
+    }
+
+    /// Convenience method to List a generic path from Vault
+    fn list(&self, path: &str) -> Result<Response, Error> {
+        self.read(path, Method::from_bytes(b"LIST").expect("To not fail"))
+    }
+
+    /// Convenience method to Post to a generic path to Vault
+    fn post<T: Serialize>(&self, path: &str, payload: &T) -> Result<Response, Error> {
+        self.write(path, payload, Method::POST)
+    }
+
+    /// Convenience method to Put to a generic path to Vault
+    fn put<T: Serialize>(&self, path: &str, payload: &T) -> Result<Response, Error> {
+        self.write(path, payload, Method::PUT)
+    }
+
+    /// Convenience method to Delete a Path from Vault
+    fn delete(&self, path: &str) -> Result<Response, Error> {
+        self.read(path, Method::DELETE)
+    }
 }
 
 impl Client {
@@ -325,60 +364,6 @@ impl Client {
             .header("X-Vault-Token", self.token.as_str()))
     }
 
-    /// Read a generic Path from Vault
-    pub fn read(&self, path: &str, method: Method) -> Result<Response, Error> {
-        let request = self.build_request(path, method)?.build()?;
-
-        Self::execute_request(&self.client, request)
-    }
-
-    /// Write to a generic path to Vault
-    pub fn write<T: Serialize>(
-        &self,
-        path: &str,
-        payload: &T,
-        method: Method,
-    ) -> Result<Response, Error> {
-        let request = self.build_request(path, method)?.json(payload).build()?;
-
-        Self::execute_request(&self.client, request)
-    }
-
-    /// Get a generic path from Vault
-    pub fn get(&self, path: &str) -> Result<Response, Error> {
-        self.read(path, Method::GET)
-    }
-
-    /// List a generic path from Vault
-    pub fn list(&self, path: &str) -> Result<Response, Error> {
-        self.read(path, Method::from_bytes(b"LIST").expect("To not fail"))
-    }
-
-    /// Post to a generic path to Vault
-    pub fn post<T: Serialize>(&self, path: &str, payload: &T) -> Result<Response, Error> {
-        let request = self
-            .build_request(path, Method::POST)?
-            .json(payload)
-            .build()?;
-
-        Self::execute_request(&self.client, request)
-    }
-
-    /// Put to a generic path to Vault
-    pub fn put<T: Serialize>(&self, path: &str, payload: &T) -> Result<Response, Error> {
-        let request = self
-            .build_request(path, Method::PUT)?
-            .json(payload)
-            .build()?;
-
-        Self::execute_request(&self.client, request)
-    }
-
-    /// Delete a Path from Vault
-    pub fn delete(&self, path: &str) -> Result<Response, Error> {
-        self.read(path, Method::DELETE)
-    }
-
     /// Revoke the Vault token itself
     ///
     /// If successful, the Vault Token can no longer be used
@@ -400,6 +385,25 @@ impl Client {
             .post(vault_address)
             .header("X-Vault-Token", self.token.as_str())
             .build()?)
+    }
+}
+
+impl Vault for Client {
+    fn read(&self, path: &str, method: Method) -> Result<Response, Error> {
+        let request = self.build_request(path, method)?.build()?;
+
+        Self::execute_request(&self.client, request)
+    }
+
+    fn write<T: Serialize>(
+        &self,
+        path: &str,
+        payload: &T,
+        method: Method,
+    ) -> Result<Response, Error> {
+        let request = self.build_request(path, method)?.json(payload).build()?;
+
+        Self::execute_request(&self.client, request)
     }
 }
 
