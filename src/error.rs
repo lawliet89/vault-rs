@@ -36,6 +36,12 @@ pub enum Error {
     /// Vault Error
     #[fail(display = "Vault Error: {}", _0)]
     VaultError(String),
+    /// Missing data from Vault
+    #[fail(display = "Expected data from Vault, but was missing: {:#?}", _0)]
+    MissingData(Box<crate::Response>),
+    /// Expected an empty response, but got something
+    #[fail(display = "Expected an empty response from Vault but got {}", _0)]
+    UnexpectedResponse(String)
 }
 
 impl From<reqwest::Error> for Error {

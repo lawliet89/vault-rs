@@ -51,6 +51,8 @@
 
 mod error;
 
+pub mod sys;
+
 pub use error::Error;
 pub use reqwest::Method;
 
@@ -62,6 +64,7 @@ use std::ops::Deref;
 
 use log::{debug, info, warn};
 use reqwest::{Certificate, Client as HttpClient, ClientBuilder};
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
 /// A wrapper around a String with custom implementation of Display and Debug to not leak
@@ -110,8 +113,11 @@ pub struct Client {
     revoke_self_on_drop: bool,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub(crate) struct Empty;
+
 /// Generic Vault Response
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(untagged)]
 #[allow(clippy::large_enum_variant, variant_size_differences)]
 pub enum Response {
@@ -127,7 +133,7 @@ pub enum Response {
 }
 
 /// Vault General Response Data
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct ResponseData {
     /// Request UUID
     pub request_id: String,
@@ -153,7 +159,7 @@ pub struct ResponseData {
 }
 
 /// Authentication data from Vault
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct Authentication {
     /// The actual token
     pub client_token: Secret,
@@ -177,7 +183,7 @@ pub struct Authentication {
 
 /// Type of token from Vault
 /// See [Vault Documentation](https://www.vaultproject.io/docs/concepts/tokens.html#token-types-in-detail)
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum TokenType {
     /// Long lived service tokens
@@ -197,6 +203,7 @@ pub trait Vault {
         path: &str,
         payload: &T,
         method: Method,
+        response_expected: bool,
     ) -> Result<Response, Error>;
 
     /// Convenience method to Get a generic path from Vault
@@ -210,18 +217,28 @@ pub trait Vault {
     }
 
     /// Convenience method to Post to a generic path to Vault
-    fn post<T: Serialize>(&self, path: &str, payload: &T) -> Result<Response, Error> {
-        self.write(path, payload, Method::POST)
+    fn post<T: Serialize>(
+        &self,
+        path: &str,
+        payload: &T,
+        response_expected: bool,
+    ) -> Result<Response, Error> {
+        self.write(path, payload, Method::POST, response_expected)
     }
 
     /// Convenience method to Put to a generic path to Vault
-    fn put<T: Serialize>(&self, path: &str, payload: &T) -> Result<Response, Error> {
-        self.write(path, payload, Method::PUT)
+    fn put<T: Serialize>(
+        &self,
+        path: &str,
+        payload: &T,
+        response_expected: bool,
+    ) -> Result<Response, Error> {
+        self.write(path, payload, Method::PUT, response_expected)
     }
 
     /// Convenience method to Delete a Path from Vault
-    fn delete(&self, path: &str) -> Result<Response, Error> {
-        self.read(path, Method::DELETE)
+    fn delete(&self, path: &str, response_expected: bool) -> Result<Response, Error> {
+        self.write(path, &Empty, Method::DELETE, response_expected)
     }
 }
 
@@ -328,7 +345,7 @@ impl Client {
 
     fn execute_request<T>(client: &HttpClient, request: reqwest::Request) -> Result<T, Error>
     where
-        T: serde::de::DeserializeOwned + Debug,
+        T: DeserializeOwned + Debug,
     {
         debug!("Executing request: {:#?}", request);
         let mut response = client.execute(request)?;
@@ -345,7 +362,11 @@ impl Client {
         request: reqwest::Request,
     ) -> Result<(), Error> {
         debug!("Executing request: {:#?}", request);
-        let response = client.execute(request)?;
+        let mut response = client.execute(request)?;
+        let body = response.text()?;
+        if !body.is_empty() {
+            Err(Error::UnexpectedResponse(body))?;
+        }
         debug!("Response received: {:#?}", response);
         Ok(())
     }
@@ -400,10 +421,14 @@ impl Vault for Client {
         path: &str,
         payload: &T,
         method: Method,
+        response_expected: bool,
     ) -> Result<Response, Error> {
         let request = self.build_request(path, method)?.json(payload).build()?;
-
-        Self::execute_request(&self.client, request)
+        if response_expected {
+            Self::execute_request(&self.client, request)
+        } else {
+            Self::execute_request_no_body(&self.client, request).map(|_| Response::Empty)
+        }
     }
 }
 
@@ -420,12 +445,38 @@ impl Drop for Client {
 }
 
 impl Response {
-    /// Transform the Response into [`Result`]
+    /// Transform the Response into `Result`, where any successful response is `Ok`,
+    /// and an error from Vault is an `Err`.
     pub fn ok(self) -> Result<Option<ResponseData>, Error> {
         match self {
             Response::Error { errors } => Err(Error::VaultError(errors.join("; "))),
             Response::Response(data) => Ok(Some(data)),
             Response::Empty => Ok(None),
+        }
+    }
+    /// Turns a Response into `Result`, where a response with data is `Ok`, and anything else
+    /// is an `Err`
+    pub fn data_value(&self) -> Result<&serde_json::Value, Error> {
+        match self {
+            Response::Error { errors } => Err(Error::VaultError(errors.join("; "))),
+            Response::Empty => Err(Error::MissingData(Box::new(self.clone()))),
+            Response::Response(data) => match &data.data {
+                None => Err(Error::MissingData(Box::new(self.clone()))),
+                Some(data) => Ok(data),
+            },
+        }
+    }
+
+    /// Turns a Response into `Result`, where a response with data is `Ok`, and anything else
+    /// is an `Err`
+    pub fn data<T: DeserializeOwned>(&self) -> Result<T, Error> {
+        match self {
+            Response::Error { errors } => Err(Error::VaultError(errors.join("; "))),
+            Response::Empty => Err(Error::MissingData(Box::new(self.clone()))),
+            Response::Response(data) => match &data.data {
+                None => Err(Error::MissingData(Box::new(self.clone()))),
+                Some(data) => Ok(serde_json::from_value(data.clone())?),
+            },
         }
     }
 }
@@ -450,6 +501,10 @@ pub(crate) mod tests {
             None,
         )
         .unwrap()
+    }
+
+    pub(crate) fn uuid() -> String {
+        uuid::Uuid::new_v4().to_simple().to_string()
     }
 
     #[test]
