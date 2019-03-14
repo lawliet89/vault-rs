@@ -15,7 +15,9 @@ pub struct SecretEngine {
     /// Type of secrets engine
     pub r#type: String,
     /// Specifies the human-friendly description of the mount.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     /// Configuration options for the mounts
     pub config: Option<SecretsEngineConfig>,
 }
@@ -24,39 +26,39 @@ pub struct SecretEngine {
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Default)]
 pub struct SecretsEngineConfig {
     /// The default lease duration, specified as a string duration like "5s" or "30m".
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub default_lease_ttl: Option<u64>,
     /// The maximum lease duration, specified as a string duration like "5s" or "30m".
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub max_lease_ttl: Option<u64>,
     /// Disable caching.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub force_no_cache: Option<bool>,
     /// List of keys that will not be HMAC'd by audit devices in the request data object.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub audit_non_hmac_request_keys: Option<HashSet<String>>,
     /// List of keys that will not be HMAC'd by audit devices in the response data object.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub audit_non_hmac_response_keys: Option<HashSet<String>>,
     /// Specifies whether to show this mount in the UI-specific listing endpoint.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub listing_visibility: Option<ListingVisibility>,
     /// List of headers to whitelist and pass from the request to the plugin.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub passthrough_request_headers: Option<HashSet<String>>,
     /// List of headers to whitelist, allowing a plugin to include them in the response.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub allowed_response_headers: Option<HashSet<String>>,
     /// Specifies mount type specific options that are passed to the backend.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub options: Option<HashMap<String, String>>,
     /// (Vault Enterprise) Specifies if the secrets engine is a local mount only.
     /// Local mounts are not replicated nor (if a secondary) removed by replication.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub local: Option<bool>,
     /// (Vault Enterprise) Enable seal wrapping for the mount,
     /// causing values stored by the mount to be wrapped by the seal's encryption capability.
-    /// #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub seal_wrap: Option<bool>,
 }
 
@@ -66,25 +68,25 @@ pub struct SecretsEngineTune {
     /// Specifies the human-friendly description of the mount.
     pub description: Option<String>,
     /// The default lease duration, specified as a string duration like "5s" or "30m".
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub default_lease_ttl: Option<u64>,
     /// The maximum lease duration, specified as a string duration like "5s" or "30m".
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub max_lease_ttl: Option<u64>,
     /// List of keys that will not be HMAC'd by audit devices in the request data object.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub audit_non_hmac_request_keys: Option<HashSet<String>>,
     /// List of keys that will not be HMAC'd by audit devices in the response data object.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub audit_non_hmac_response_keys: Option<HashSet<String>>,
     /// Specifies whether to show this mount in the UI-specific listing endpoint.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub listing_visibility: Option<ListingVisibility>,
     /// List of headers to whitelist and pass from the request to the plugin.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub passthrough_request_headers: Option<HashSet<String>>,
     /// List of headers to whitelist, allowing a plugin to include them in the response.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub allowed_response_headers: Option<HashSet<String>>,
 }
 
@@ -168,6 +170,40 @@ where
 pub(crate) mod tests {
     use super::*;
 
+    use crate::Vault;
+
+    pub(crate) struct Mount<'a, T>
+    where
+        T: Vault,
+    {
+        pub(crate) path: String,
+        pub(crate) client: &'a T,
+    }
+
+    impl<'a, T> Mount<'a, T>
+    where
+        T: Vault,
+    {
+        pub(crate) fn new(client: &'a T, config: &SecretEngine) -> Self {
+            let response = Mounts::enable(&client, &config).unwrap();
+            assert!(response.ok().unwrap().is_none());
+            Mount {
+                path: config.path.clone(),
+                client,
+            }
+        }
+    }
+
+    impl<'a, T> Drop for Mount<'a, T>
+    where
+        T: Vault,
+    {
+        fn drop(&mut self) {
+            let response = Mounts::disable(self.client, &self.path).unwrap();
+            assert!(response.ok().unwrap().is_none());
+        }
+    }
+
     #[test]
     fn can_list_mounts() {
         let client = crate::tests::vault_client();
@@ -194,10 +230,15 @@ pub(crate) mod tests {
         let _ = Mounts::get(&client, &path).unwrap();
 
         // Tune description
-        let _ = Mounts::tune(&client, &path, &SecretsEngineTune {
-            description: Some("hello world".to_string()),
-            ..Default::default()
-        }).unwrap();
+        let _ = Mounts::tune(
+            &client,
+            &path,
+            &SecretsEngineTune {
+                description: Some("hello world".to_string()),
+                ..Default::default()
+            },
+        )
+        .unwrap();
 
         let response = Mounts::disable(&client, &path).unwrap();
         assert!(response.ok().unwrap().is_none());

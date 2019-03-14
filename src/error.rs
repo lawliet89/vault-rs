@@ -41,7 +41,10 @@ pub enum Error {
     MissingData(Box<crate::Response>),
     /// Expected an empty response, but got something
     #[fail(display = "Expected an empty response from Vault but got {}", _0)]
-    UnexpectedResponse(String)
+    UnexpectedResponse(String),
+    /// Response from Vault was not in the right form
+    #[fail(display = "Response from Vault was not in the expected form")]
+    MalformedResponse,
 }
 
 impl From<reqwest::Error> for Error {

@@ -51,6 +51,7 @@
 
 mod error;
 
+pub mod secrets;
 pub mod sys;
 
 pub use error::Error;
@@ -409,6 +410,25 @@ impl Client {
     }
 }
 
+impl<T> Vault for &T
+where
+    T: Vault,
+{
+    fn read(&self, path: &str, method: Method) -> Result<Response, Error> {
+        T::read(&self, path, method)
+    }
+
+    fn write<P: Serialize>(
+        &self,
+        path: &str,
+        payload: &P,
+        method: Method,
+        response_expected: bool,
+    ) -> Result<Response, Error> {
+        T::write(&self, path, payload, method, response_expected)
+    }
+}
+
 impl Vault for Client {
     fn read(&self, path: &str, method: Method) -> Result<Response, Error> {
         let request = self.build_request(path, method)?.build()?;
@@ -505,6 +525,10 @@ pub(crate) mod tests {
 
     pub(crate) fn uuid() -> String {
         uuid::Uuid::new_v4().to_simple().to_string()
+    }
+
+    pub(crate) fn uuid_prefix(prefix: &str) -> String {
+        format!("{}-{}", prefix, uuid::Uuid::new_v4().to_simple())
     }
 
     #[test]
