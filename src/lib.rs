@@ -322,8 +322,12 @@ pub(crate) mod tests {
     use super::*;
 
     pub(crate) fn vault_client() -> Client {
-        Client::from_environment::<_, &str, &str>(Some("http://127.0.0.1:8200"), None, None)
-            .unwrap()
+        Client::from_environment::<_, &str, &str>(
+            Some("http://127.0.0.1:8200"),
+            Some("12345"),
+            None,
+        )
+        .unwrap()
     }
 
     #[test]
