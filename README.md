@@ -4,10 +4,10 @@ This crate is a thin wrapper around [Vault](https://www.vaultproject.io/) HTTP A
 
 ## Tests
 
-You need to start a Vault server in development mode to run tests.
+You need to start a Vault server in development mode and some other mock servers to run tests.
 
 ```bash
-vault server -dev -dev-root-token-id=12345
+docker-compose -f tests/docker-compose.yml up --build
 ```
 
 Then, you can run tests using
