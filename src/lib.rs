@@ -199,6 +199,14 @@ pub trait Vault {
     /// Read a generic Path from Vault
     fn read(&self, path: &str, method: Method) -> Result<Response, Error>;
 
+    /// Read a generic Path from Vault with Query
+    fn read_with_query<T: Serialize + ?Sized>(
+        &self,
+        path: &str,
+        method: Method,
+        query: &T,
+    ) -> Result<Response, Error>;
+
     /// Write to a generic Path in Vault.
     fn write<T: Serialize>(
         &self,
@@ -211,6 +219,15 @@ pub trait Vault {
     /// Convenience method to Get a generic path from Vault
     fn get(&self, path: &str) -> Result<Response, Error> {
         self.read(path, Method::GET)
+    }
+
+    /// Convenience method to Get a generic path from Vault
+    fn get_with_query<T: Serialize + ?Sized>(
+        &self,
+        path: &str,
+        query: &T,
+    ) -> Result<Response, Error> {
+        self.read_with_query(path, Method::GET, query)
     }
 
     /// Convenience method to List a generic path from Vault
@@ -419,6 +436,15 @@ where
         T::read(&self, path, method)
     }
 
+    fn read_with_query<Q: Serialize + ?Sized>(
+        &self,
+        path: &str,
+        method: Method,
+        query: &Q,
+    ) -> Result<Response, Error> {
+        T::read_with_query(&self, path, method, query)
+    }
+
     fn write<P: Serialize>(
         &self,
         path: &str,
@@ -434,6 +460,16 @@ impl Vault for Client {
     fn read(&self, path: &str, method: Method) -> Result<Response, Error> {
         let request = self.build_request(path, method)?.build()?;
 
+        Self::execute_request(&self.client, request)
+    }
+
+    fn read_with_query<T: Serialize + ?Sized>(
+        &self,
+        path: &str,
+        method: Method,
+        query: &T,
+    ) -> Result<Response, Error> {
+        let request = self.build_request(path, method)?.query(&query).build()?;
         Self::execute_request(&self.client, request)
     }
 
