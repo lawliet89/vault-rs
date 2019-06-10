@@ -1,0 +1,38 @@
+version: "2.4"
+services:
+  vault:
+    image: vault:1.1.2
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: 12345
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - 8200:8200
+    healthcheck:
+      test: ["CMD", "vault", "status", "-address", "http://127.0.0.1:8200"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+  aws_iam:
+    build: aws
+    command: ["moto_server", "iam", "-H", "0.0.0.0"]
+    ports:
+      - 5001:5000
+    healthcheck:
+      test: ["CMD", "curl", "http://127.0.0.1:5000/moto-api"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+  aws_sts:
+    build: aws
+    command: ["moto_server", "sts", "-H", "0.0.0.0", "-p", "8000"]
+    ports:
+      - 5002:8000
+    healthcheck:
+      test: ["CMD", "curl", "http://127.0.0.1:8000/moto-api"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
