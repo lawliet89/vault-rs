@@ -62,12 +62,12 @@ pub struct CredentialsRequest {
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Default)]
 pub struct Credentials {
     /// AWS Access Key
-    access_key: String,
+    pub access_key: String,
     /// AWS Secret Key
-    secret_key: String,
+    pub secret_key: String,
     /// AWS Security Token, if any
     #[serde(default)]
-    security_token: Option<String>,
+    pub security_token: Option<String>,
 }
 
 /// AWS Secrets Engine
