@@ -12,21 +12,21 @@ pub struct RootCredentials {
     /// Number of max retries the client should use for recoverable errors.
     /// The default (-1) falls back to the AWS SDK's default behavior.
     #[serde(default = "default_max_retries")]
-    max_retries: i64,
+    pub max_retries: i64,
     /// Specifies the AWS access key ID.
-    access_key: String,
+    pub access_key: String,
     /// Specifies the AWS secret access key.
-    secret_key: String,
+    pub secret_key: String,
     /// Specifies the AWS region. If not set it will use the AWS_REGION env var, AWS_DEFAULT_REGION
     /// env var, or us-east-1 in that order.
     #[serde(skip_serializing_if = "Option::is_none")]
-    region: Option<String>,
+    pub region: Option<String>,
     /// Specifies a custom HTTP IAM endpoint to use.
     #[serde(skip_serializing_if = "Option::is_none")]
-    iam_endpoint: Option<String>,
+    pub iam_endpoint: Option<String>,
     /// Specifies a custom HTTP STS endpoint to use.
     #[serde(skip_serializing_if = "Option::is_none")]
-    sts_endpoint: Option<String>,
+    pub sts_endpoint: Option<String>,
 }
 
 /// Parameters for configuring the lease for the AWS Secrets Engine
@@ -34,10 +34,10 @@ pub struct RootCredentials {
 pub struct Lease {
     /// Specifies the lease value provided as a string duration with time suffix. "h" (hour) is
     /// the largest suffix.
-    lease: String,
+    pub lease: String,
     /// Specifies the maximum lease value provided as a string duration with time suffix. "h"
     /// (hour) is the largest suffix.
-    lease_max: String,
+    pub lease_max: String,
 }
 
 /// AWS Secrets Engine Role
@@ -51,11 +51,11 @@ pub struct CredentialsRequest {
     /// Must match one of the allowed role ARNs in the Vault role. Optional if the Vault role
     /// only allows a single AWS role ARN; required otherwise.
     #[serde(skip_serializing_if = "Option::is_none")]
-    role_arn: Option<String>,
+    pub role_arn: Option<String>,
     /// Specifies the TTL for the use of the STS token. This is specified as a string with a
     /// duration suffix. Valid only when credential_type is assumed_role or federation_token.
     #[serde(skip_serializing_if = "Option::is_none")]
-    ttl: Option<String>,
+    pub ttl: Option<String>,
 }
 
 /// Credentials Returned from Vault
