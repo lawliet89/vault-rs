@@ -59,7 +59,7 @@ pub struct CredentialsRequest {
 }
 
 /// Credentials Returned from Vault
-#[derive(Deserialize, Debug, Eq, PartialEq, Default)]
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Default)]
 pub struct Credentials {
     /// AWS Access Key
     access_key: String,
