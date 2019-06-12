@@ -1,7 +1,7 @@
 //! AWS Secrets Engine
 //!
 //! See the [documentation](https://www.vaultproject.io/api/secret/aws/index.html).
-use crate::{Error, Response};
+use crate::{Error, LeasedData, Response};
 
 use reqwest::Method;
 use serde::{Deserialize, Serialize};
@@ -103,7 +103,7 @@ pub trait Aws {
         path: &str,
         role: &str,
         request: &CredentialsRequest,
-    ) -> Result<Credentials, Error>;
+    ) -> Result<LeasedData<Credentials>, Error>;
 }
 
 impl<T> Aws for T
@@ -154,10 +154,9 @@ where
         path: &str,
         role: &str,
         request: &CredentialsRequest,
-    ) -> Result<Credentials, Error> {
+    ) -> Result<LeasedData<Credentials>, Error> {
         let path = format!("{}/creds/{}", path, role);
-        let creds: Credentials = self.get_with_query(&path, request)?.data()?;
-        Ok(creds)
+        self.get_with_query(&path, request)?.leased_data()
     }
 }
 

@@ -134,7 +134,7 @@ pub enum Response {
     Empty,
 }
 
-/// Vault General Response Data
+/// Vault Generic Response Data
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct ResponseData {
     /// Request UUID
@@ -158,6 +158,26 @@ pub struct ResponseData {
     pub data: Option<serde_json::Value>,
     // Missing and ignored fields:
     // - wrap_info
+}
+
+/// Wrapped Vault Secret with Lease Data
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+pub struct LeasedData<T> {
+    /// Lease ID for secrets
+    pub lease_id: String,
+    /// Renewable for secrets
+    pub renewable: bool,
+    /// Lease duration for secrets
+    pub lease_duration: u64,
+    /// Wrapped Data
+    pub data: T,
+}
+
+impl<T> LeasedData<T> {
+    /// Unwrap and discard the lease data, returning the wrapped data
+    pub fn unwrap(self) -> T {
+        self.data
+    }
 }
 
 /// Authentication data from Vault
@@ -524,15 +544,34 @@ impl Response {
         }
     }
 
-    /// Turns a Response into `Result`, where a response with data is `Ok`, and anything else
-    /// is an `Err`
+    /// Decode the response into the appropriate data type
     pub fn data<T: DeserializeOwned>(&self) -> Result<T, Error> {
         match self {
             Response::Error { errors } => Err(Error::VaultError(errors.join("; "))),
             Response::Empty => Err(Error::MissingData(Box::new(self.clone()))),
-            Response::Response(data) => match &data.data {
+            Response::Response(response_data) => match &response_data.data {
                 None => Err(Error::MissingData(Box::new(self.clone()))),
                 Some(data) => Ok(serde_json::from_value(data.clone())?),
+            },
+        }
+    }
+
+    /// Decode the response into the appropriate data type along with lease data
+    pub fn leased_data<T: DeserializeOwned>(&self) -> Result<LeasedData<T>, Error> {
+        match self {
+            Response::Error { errors } => Err(Error::VaultError(errors.join("; "))),
+            Response::Empty => Err(Error::MissingData(Box::new(self.clone()))),
+            Response::Response(response_data) => match &response_data.data {
+                None => Err(Error::MissingData(Box::new(self.clone()))),
+                Some(data) => {
+                    let deserialized = serde_json::from_value(data.clone())?;
+                    Ok(LeasedData {
+                        lease_id: response_data.lease_id.clone(),
+                        renewable: response_data.renewable,
+                        lease_duration: response_data.lease_duration,
+                        data: deserialized,
+                    })
+                }
             },
         }
     }
