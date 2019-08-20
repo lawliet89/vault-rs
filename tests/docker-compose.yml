@@ -1,7 +1,7 @@
 version: "2.4"
 services:
   vault:
-    image: vault:1.1.2
+    image: vault:1.2.2
     environment:
       VAULT_DEV_ROOT_TOKEN_ID: 12345
     cap_add:
