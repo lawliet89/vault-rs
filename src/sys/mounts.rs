@@ -3,6 +3,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::Error;
 
+use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::map::Map;
 use serde_json::Value;
@@ -101,29 +102,31 @@ pub enum ListingVisibility {
 }
 
 /// Implements the [`/sys/mounts`](https://www.vaultproject.io/api/system/mounts.html) endpoint
+#[async_trait]
 pub trait Mounts {
     /// List all the mounted secrets engine
-    fn list(&self) -> Result<HashMap<String, SecretEngine>, Error>;
+    async fn list(&self) -> Result<HashMap<String, SecretEngine>, Error>;
 
     /// Enable a secrets Engine
-    fn enable(&self, engine: &SecretEngine) -> Result<crate::Response, Error>;
+    async fn enable(&self, engine: &SecretEngine) -> Result<crate::Response, Error>;
 
     /// Disable a secrets engine
-    fn disable(&self, path: &str) -> Result<crate::Response, Error>;
+    async fn disable(&self, path: &str) -> Result<crate::Response, Error>;
 
     /// Get the configuration for a mount
-    fn get(&self, path: &str) -> Result<SecretsEngineConfig, Error>;
+    async fn get(&self, path: &str) -> Result<SecretsEngineConfig, Error>;
 
     /// Tune the configuration for a mount
-    fn tune(&self, path: &str, config: &SecretsEngineTune) -> Result<crate::Response, Error>;
+    async fn tune(&self, path: &str, config: &SecretsEngineTune) -> Result<crate::Response, Error>;
 }
 
+#[async_trait]
 impl<T> Mounts for T
 where
-    T: crate::Vault,
+    T: crate::Vault + Send + Sync,
 {
-    fn list(&self) -> Result<HashMap<String, SecretEngine>, Error> {
-        let values: HashMap<String, Map<String, Value>> = self.get("sys/mounts")?.data()?;
+    async fn list(&self) -> Result<HashMap<String, SecretEngine>, Error> {
+        let values: HashMap<String, Map<String, Value>> = self.get("sys/mounts").await?.data()?;
 
         let values: Result<HashMap<String, SecretEngine>, Error> = values
             .into_iter()
@@ -143,26 +146,26 @@ where
         Ok(values?)
     }
 
-    fn enable(&self, engine: &SecretEngine) -> Result<crate::Response, Error> {
+    async fn enable(&self, engine: &SecretEngine) -> Result<crate::Response, Error> {
         let mut value = serde_json::to_value(engine)?;
         let path = value["path"].take();
         let path = format!("sys/mounts/{}", path.as_str().expect("To be a string"));
-        self.post(&path, &value, false)
+        self.post(&path, &value, false).await
     }
 
-    fn disable(&self, path: &str) -> Result<crate::Response, Error> {
+    async fn disable(&self, path: &str) -> Result<crate::Response, Error> {
         let path = format!("sys/mounts/{}", path);
-        self.delete(&path, false)
+        self.delete(&path, false).await
     }
 
-    fn get(&self, path: &str) -> Result<SecretsEngineConfig, Error> {
+    async fn get(&self, path: &str) -> Result<SecretsEngineConfig, Error> {
         let path = format!("sys/mounts/{}/tune", path);
-        self.get(&path)?.data()
+        self.get(&path).await?.data()
     }
 
-    fn tune(&self, path: &str, config: &SecretsEngineTune) -> Result<crate::Response, Error> {
+    async fn tune(&self, path: &str, config: &SecretsEngineTune) -> Result<crate::Response, Error> {
         let path = format!("sys/mounts/{}/tune", path);
-        self.post(&path, config, false)
+        self.post(&path, config, false).await
     }
 }
 
@@ -172,46 +175,47 @@ pub(crate) mod tests {
 
     use crate::Vault;
 
-    pub(crate) struct Mount<'a, T>
+    pub(crate) struct Mount<T>
     where
-        T: Vault,
+        T: Vault + Send + Sync,
     {
         pub(crate) path: String,
-        pub(crate) client: &'a T,
+        pub(crate) client: T,
     }
 
-    impl<'a, T> Mount<'a, T>
+    impl<T> Mount<T>
     where
-        T: Vault,
+        T: Vault + Send + Sync + Clone,
     {
-        pub(crate) fn new(client: &'a T, config: &SecretEngine) -> Self {
-            let response = Mounts::enable(&client, &config).unwrap();
+        pub(crate) async fn new(client: &T, config: &SecretEngine) -> Self {
+            let response = Mounts::enable(&client, &config).await.unwrap();
             assert!(response.ok().unwrap().is_none());
             Mount {
                 path: config.path.clone(),
-                client,
+                client: client.clone(),
             }
         }
     }
 
-    impl<'a, T> Drop for Mount<'a, T>
+    impl<T> Drop for Mount<T>
     where
-        T: Vault,
+        T: Vault + Send + Sync,
     {
         fn drop(&mut self) {
-            let response = Mounts::disable(self.client, &self.path).unwrap();
+            let response =
+                futures::executor::block_on(Mounts::disable(&self.client, &self.path)).unwrap();
             assert!(response.ok().unwrap().is_none());
         }
     }
 
-    #[test]
-    fn can_list_mounts() {
+    #[tokio::test(threaded_scheduler)]
+    async fn can_list_mounts() {
         let client = crate::tests::vault_client();
-        let _ = Mounts::list(&client).unwrap();
+        let _ = Mounts::list(&client).await.unwrap();
     }
 
-    #[test]
-    fn can_mount_and_unmount_kv() {
+    #[tokio::test(threaded_scheduler)]
+    async fn can_mount_and_unmount_kv() {
         let client = crate::tests::vault_client();
 
         let path = crate::tests::uuid();
@@ -220,14 +224,14 @@ pub(crate) mod tests {
             r#type: "kv".to_string(),
             ..Default::default()
         };
-        let response = Mounts::enable(&client, &engine).unwrap();
+        let response = Mounts::enable(&client, &engine).await.unwrap();
         assert!(response.ok().unwrap().is_none());
 
-        let mounts = Mounts::list(&client).unwrap();
+        let mounts = Mounts::list(&client).await.unwrap();
         assert!(mounts.get(&path).is_some());
 
         // Config can be read back
-        let _ = Mounts::get(&client, &path).unwrap();
+        let _ = Mounts::get(&client, &path).await.unwrap();
 
         // Tune description
         let _ = Mounts::tune(
@@ -238,12 +242,13 @@ pub(crate) mod tests {
                 ..Default::default()
             },
         )
+        .await
         .unwrap();
 
-        let response = Mounts::disable(&client, &path).unwrap();
+        let response = Mounts::disable(&client, &path).await.unwrap();
         assert!(response.ok().unwrap().is_none());
 
-        let mounts = Mounts::list(&client).unwrap();
+        let mounts = Mounts::list(&client).await.unwrap();
         assert!(mounts.get(&path).is_none());
     }
 }

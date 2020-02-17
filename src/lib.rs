@@ -62,6 +62,7 @@ use std::fs::File;
 use std::io::Read;
 use std::ops::Deref;
 
+use async_trait::async_trait;
 use log::{debug, info, warn};
 use reqwest::{Certificate, Client as HttpClient, ClientBuilder};
 use serde::de::DeserializeOwned;
@@ -213,12 +214,13 @@ pub enum TokenType {
 }
 
 /// Trait implementing the basic API operations for Vault
+#[async_trait]
 pub trait Vault {
     /// Read a generic Path from Vault
-    fn read(&self, path: &str, method: Method) -> Result<Response, Error>;
+    async fn read(&self, path: &str, method: Method) -> Result<Response, Error>;
 
     /// Read a generic Path from Vault with Query
-    fn read_with_query<T: Serialize + ?Sized>(
+    async fn read_with_query<T: Serialize + Send + Sync + ?Sized>(
         &self,
         path: &str,
         method: Method,
@@ -226,7 +228,7 @@ pub trait Vault {
     ) -> Result<Response, Error>;
 
     /// Write to a generic Path in Vault.
-    fn write<T: Serialize>(
+    async fn write<T: Serialize + Send + Sync>(
         &self,
         path: &str,
         payload: &T,
@@ -235,47 +237,51 @@ pub trait Vault {
     ) -> Result<Response, Error>;
 
     /// Convenience method to Get a generic path from Vault
-    fn get(&self, path: &str) -> Result<Response, Error> {
-        self.read(path, Method::GET)
+    async fn get(&self, path: &str) -> Result<Response, Error> {
+        self.read(path, Method::GET).await
     }
 
-    /// Convenience method to Get a generic path from Vault
-    fn get_with_query<T: Serialize + ?Sized>(
+    /// Convenience method to Get a generic path from VaultResult
+    async fn get_with_query<T: Serialize + Send + Sync + ?Sized>(
         &self,
         path: &str,
         query: &T,
     ) -> Result<Response, Error> {
-        self.read_with_query(path, Method::GET, query)
+        self.read_with_query(path, Method::GET, query).await
     }
 
     /// Convenience method to List a generic path from Vault
-    fn list(&self, path: &str) -> Result<Response, Error> {
-        self.read(path, Method::from_bytes(b"LIST").expect("To not fail"))
+    async fn list(&self, path: &str) -> Result<Response, Error> {
+        self.read(path, Method::from_bytes(b"LIST").expect("Not to fail"))
+            .await
     }
 
     /// Convenience method to Post to a generic path to Vault
-    fn post<T: Serialize>(
+    async fn post<T: Serialize + Send + Sync>(
         &self,
         path: &str,
         payload: &T,
         response_expected: bool,
     ) -> Result<Response, Error> {
         self.write(path, payload, Method::POST, response_expected)
+            .await
     }
 
     /// Convenience method to Put to a generic path to Vault
-    fn put<T: Serialize>(
+    async fn put<T: Serialize + Send + Sync>(
         &self,
         path: &str,
         payload: &T,
         response_expected: bool,
     ) -> Result<Response, Error> {
         self.write(path, payload, Method::PUT, response_expected)
+            .await
     }
 
     /// Convenience method to Delete a Path from Vault
-    fn delete(&self, path: &str, response_expected: bool) -> Result<Response, Error> {
+    async fn delete(&self, path: &str, response_expected: bool) -> Result<Response, Error> {
         self.write(path, &Empty, Method::DELETE, response_expected)
+            .await
     }
 }
 
@@ -380,31 +386,31 @@ impl Client {
         &self.address
     }
 
-    fn execute_request<T>(client: &HttpClient, request: reqwest::Request) -> Result<T, Error>
+    async fn execute_request<T>(client: &HttpClient, request: reqwest::Request) -> Result<T, Error>
     where
         T: DeserializeOwned + Debug,
     {
         debug!("Executing request: {:#?}", request);
-        let mut response = client.execute(request)?;
+        let response = client.execute(request).await?;
         debug!("Response received: {:#?}", response);
-        let body = response.text()?;
+        let body = response.text().await?;
         debug!("Response body: {}", body);
         let result = serde_json::from_str(&body)?;
         debug!("Deserialized body: {:#?}", result);
         Ok(result)
     }
 
-    fn execute_request_no_body(
+    async fn execute_request_no_body(
         client: &HttpClient,
         request: reqwest::Request,
     ) -> Result<(), Error> {
         debug!("Executing request: {:#?}", request);
-        let mut response = client.execute(request)?;
-        let body = response.text()?;
+        let response = client.execute(request).await?;
+        debug!("Response received: {:#?}", response);
+        let body = response.text().await?;
         if !body.is_empty() {
             return Err(Error::UnexpectedResponse(body));
         }
-        debug!("Response received: {:#?}", response);
         Ok(())
     }
 
@@ -425,12 +431,12 @@ impl Client {
     /// Revoke the Vault token itself
     ///
     /// If successful, the Vault Token can no longer be used
-    pub fn revoke_self(&self) -> Result<(), Error> {
+    pub async fn revoke_self(&self) -> Result<(), Error> {
         info!("Revoking self Vault Token");
 
         let request = self.build_revoke_self_request()?;
         // HTTP 204 is returned
-        Self::execute_request_no_body(&self.client, request)?;
+        Self::execute_request_no_body(&self.client, request).await?;
         Ok(())
     }
 
@@ -446,52 +452,55 @@ impl Client {
     }
 }
 
+#[async_trait]
+#[allow(clippy::trivially_copy_pass_by_ref)]
 impl<T> Vault for &T
 where
-    T: Vault,
+    T: Vault + Send + Sync,
 {
-    fn read(&self, path: &str, method: Method) -> Result<Response, Error> {
-        T::read(&self, path, method)
+    async fn read(&self, path: &str, method: Method) -> Result<Response, Error> {
+        T::read(&self, path, method).await
     }
 
-    fn read_with_query<Q: Serialize + ?Sized>(
+    async fn read_with_query<Q: Serialize + Send + Sync + ?Sized>(
         &self,
         path: &str,
         method: Method,
         query: &Q,
     ) -> Result<Response, Error> {
-        T::read_with_query(&self, path, method, query)
+        T::read_with_query(&self, path, method, query).await
     }
 
-    fn write<P: Serialize>(
+    async fn write<P: Serialize + Send + Sync>(
         &self,
         path: &str,
         payload: &P,
         method: Method,
         response_expected: bool,
     ) -> Result<Response, Error> {
-        T::write(&self, path, payload, method, response_expected)
+        T::write(&self, path, payload, method, response_expected).await
     }
 }
 
+#[async_trait]
 impl Vault for Client {
-    fn read(&self, path: &str, method: Method) -> Result<Response, Error> {
+    async fn read(&self, path: &str, method: Method) -> Result<Response, Error> {
         let request = self.build_request(path, method)?.build()?;
 
-        Self::execute_request(&self.client, request)
+        Self::execute_request(&self.client, request).await
     }
 
-    fn read_with_query<T: Serialize + ?Sized>(
+    async fn read_with_query<T: Serialize + Send + Sync + ?Sized>(
         &self,
         path: &str,
         method: Method,
         query: &T,
     ) -> Result<Response, Error> {
         let request = self.build_request(path, method)?.query(&query).build()?;
-        Self::execute_request(&self.client, request)
+        Self::execute_request(&self.client, request).await
     }
 
-    fn write<T: Serialize>(
+    async fn write<T: Serialize + Send + Sync>(
         &self,
         path: &str,
         payload: &T,
@@ -500,9 +509,11 @@ impl Vault for Client {
     ) -> Result<Response, Error> {
         let request = self.build_request(path, method)?.json(payload).build()?;
         if response_expected {
-            Self::execute_request(&self.client, request)
+            Self::execute_request(&self.client, request).await
         } else {
-            Self::execute_request_no_body(&self.client, request).map(|_| Response::Empty)
+            Self::execute_request_no_body(&self.client, request)
+                .await
+                .map(|_| Response::Empty)
         }
     }
 }
@@ -511,7 +522,7 @@ impl Drop for Client {
     fn drop(&mut self) {
         if self.revoke_self_on_drop {
             info!("Vault Client is being dropped. Revoking its own Token");
-            match self.revoke_self() {
+            match futures::executor::block_on(self.revoke_self()) {
                 Ok(()) => {}
                 Err(e) => warn!("Error revoking self: {}", e),
             }
@@ -605,15 +616,15 @@ pub(crate) mod tests {
         format!("{}-{}", prefix, uuid::Uuid::new_v4().to_simple())
     }
 
-    #[test]
-    fn can_read_self_capabilities() {
+    #[tokio::test]
+    async fn can_read_self_capabilities() {
         let client = vault_client();
-        let _ = client.get("/auth/token/lookup-self").unwrap();
+        let _ = client.get("/auth/token/lookup-self").await.unwrap();
     }
 
-    #[test]
-    fn can_list_kv() {
+    #[tokio::test]
+    async fn can_list_kv() {
         let client = vault_client();
-        let _ = client.list("secrets").unwrap();
+        let _ = client.list("secrets").await.unwrap();
     }
 }

@@ -3,6 +3,7 @@
 //! See the [documentation](https://www.vaultproject.io/api/secret/aws/index.html).
 use crate::{Error, LeasedData, Response};
 
+use async_trait::async_trait;
 use reqwest::Method;
 use serde::{Deserialize, Serialize};
 
@@ -73,32 +74,34 @@ pub struct Credentials {
 /// AWS Secrets Engine
 ///
 /// See the [documentation](https://www.vaultproject.io/api/secret/aws/index.html).
+#[async_trait]
 pub trait Aws {
     /// Configure the Root IAM Credentials that Vault uses to communicate with AWS
-    fn configure_root(&self, path: &str, config: &RootCredentials) -> Result<Response, Error>;
+    async fn configure_root(&self, path: &str, config: &RootCredentials)
+        -> Result<Response, Error>;
     /// Rotate Root IAM Credentials
     ///
     /// See [warnings](https://www.vaultproject.io/api/secret/aws/index.html#rotate-root-iam-credentials)
     /// on Vault's documentation
-    fn rotate_root(&self, path: &str) -> Result<Response, Error>;
+    async fn rotate_root(&self, path: &str) -> Result<Response, Error>;
     /// Configures the lease for the AWS Secrets Engine
-    fn configure_lease(&self, path: &str, lease: &Lease) -> Result<Response, Error>;
+    async fn configure_lease(&self, path: &str, lease: &Lease) -> Result<Response, Error>;
     /// Reads the Lease for the AWS Secrets Engine
-    fn read_lease(&self, path: &str) -> Result<Lease, Error>;
+    async fn read_lease(&self, path: &str) -> Result<Lease, Error>;
     /// Create role
-    fn create_role(&self, path: &str, role: &Role) -> Result<Response, Error>;
+    async fn create_role(&self, path: &str, role: &Role) -> Result<Response, Error>;
     /// Update Role
-    fn update_role(&self, path: &str, role: &Role) -> Result<Response, Error> {
-        self.create_role(path, role)
+    async fn update_role(&self, path: &str, role: &Role) -> Result<Response, Error> {
+        self.create_role(path, role).await
     }
     /// Read Role
-    fn read_role(&self, path: &str, role: &str) -> Result<Role, Error>;
+    async fn read_role(&self, path: &str, role: &str) -> Result<Role, Error>;
     /// List Roles
-    fn list_roles(&self, path: &str) -> Result<Vec<String>, Error>;
+    async fn list_roles(&self, path: &str) -> Result<Vec<String>, Error>;
     /// Delete Role
-    fn delete_role(&self, path: &str, role: &str) -> Result<Response, Error>;
+    async fn delete_role(&self, path: &str, role: &str) -> Result<Response, Error>;
     /// Generate Credentials
-    fn generate_credentials(
+    async fn generate_credentials(
         &self,
         path: &str,
         role: &str,
@@ -106,57 +109,62 @@ pub trait Aws {
     ) -> Result<LeasedData<Credentials>, Error>;
 }
 
+#[async_trait]
 impl<T> Aws for T
 where
-    T: crate::Vault,
+    T: crate::Vault + Send + Sync,
 {
-    fn configure_root(&self, path: &str, config: &RootCredentials) -> Result<Response, Error> {
+    async fn configure_root(
+        &self,
+        path: &str,
+        config: &RootCredentials,
+    ) -> Result<Response, Error> {
         let values = serde_json::to_value(config)?;
         let path = format!("{}/config/root", path);
-        self.post(&path, &values, false)
+        self.post(&path, &values, false).await
     }
 
-    fn rotate_root(&self, path: &str) -> Result<Response, Error> {
+    async fn rotate_root(&self, path: &str) -> Result<Response, Error> {
         let path = format!("{}/config/rotate-root", path);
-        self.read(&path, Method::POST)
+        self.read(&path, Method::POST).await
     }
 
-    fn configure_lease(&self, path: &str, lease: &Lease) -> Result<Response, Error> {
+    async fn configure_lease(&self, path: &str, lease: &Lease) -> Result<Response, Error> {
         let values = serde_json::to_value(lease)?;
         let path = format!("{}/config/lease", path);
-        self.post(&path, &values, false)
+        self.post(&path, &values, false).await
     }
 
-    fn read_lease(&self, path: &str) -> Result<Lease, Error> {
+    async fn read_lease(&self, path: &str) -> Result<Lease, Error> {
         let path = format!("{}/config/lease", path);
-        let data: Lease = self.get(&path)?.data()?;
+        let data: Lease = self.get(&path).await?.data()?;
         Ok(data)
     }
 
-    fn create_role(&self, _path: &str, _role: &Role) -> Result<Response, Error> {
+    async fn create_role(&self, _path: &str, _role: &Role) -> Result<Response, Error> {
         unimplemented!()
     }
 
-    fn read_role(&self, _path: &str, _role: &str) -> Result<Role, Error> {
+    async fn read_role(&self, _path: &str, _role: &str) -> Result<Role, Error> {
         unimplemented!()
     }
 
-    fn list_roles(&self, _path: &str) -> Result<Vec<String>, Error> {
+    async fn list_roles(&self, _path: &str) -> Result<Vec<String>, Error> {
         unimplemented!()
     }
 
-    fn delete_role(&self, _path: &str, _role: &str) -> Result<Response, Error> {
+    async fn delete_role(&self, _path: &str, _role: &str) -> Result<Response, Error> {
         unimplemented!()
     }
 
-    fn generate_credentials(
+    async fn generate_credentials(
         &self,
         path: &str,
         role: &str,
         request: &CredentialsRequest,
     ) -> Result<LeasedData<Credentials>, Error> {
         let path = format!("{}/creds/{}", path, role);
-        self.get_with_query(&path, request)?.leased_data()
+        self.get_with_query(&path, request).await?.leased_data()
     }
 }
 
@@ -170,8 +178,8 @@ mod tests {
     use super::*;
     use crate::sys::mounts::tests::Mount;
 
-    #[test]
-    fn can_configure() {
+    #[tokio::test(threaded_scheduler)]
+    async fn can_configure() {
         let client = crate::tests::vault_client();
 
         let path = crate::tests::uuid_prefix("aws");
@@ -181,7 +189,7 @@ mod tests {
             ..Default::default()
         };
 
-        let mount = Mount::new(&client, &engine);
+        let mount = Mount::new(&client, &engine).await;
         let config = RootCredentials {
             max_retries: -1,
             access_key: "aaa".to_string(),
@@ -191,17 +199,21 @@ mod tests {
             sts_endpoint: Some("http://aws_sts:8000".to_string()),
         };
 
-        let response = Aws::configure_root(&client, &mount.path, &config).unwrap();
+        let response = Aws::configure_root(&client, &mount.path, &config)
+            .await
+            .unwrap();
         assert!(response.ok().unwrap().is_none());
 
         let lease = Lease {
             lease: "1h".to_string(),
             lease_max: "24h".to_string(),
         };
-        let response = Aws::configure_lease(&client, &mount.path, &lease).unwrap();
+        let response = Aws::configure_lease(&client, &mount.path, &lease)
+            .await
+            .unwrap();
         assert!(response.ok().unwrap().is_none());
 
-        let actual_lease = Aws::read_lease(&client, &mount.path).unwrap();
+        let actual_lease = Aws::read_lease(&client, &mount.path).await.unwrap();
         assert_eq!(actual_lease.lease, "1h0m0s");
         assert_eq!(actual_lease.lease_max, "24h0m0s");
     }
