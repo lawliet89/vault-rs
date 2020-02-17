@@ -616,15 +616,15 @@ pub(crate) mod tests {
         format!("{}-{}", prefix, uuid::Uuid::new_v4().to_simple())
     }
 
-    #[test]
-    fn can_read_self_capabilities() {
+    #[tokio::test]
+    async fn can_read_self_capabilities() {
         let client = vault_client();
-        let _ = client.get("/auth/token/lookup-self").unwrap();
+        let _ = client.get("/auth/token/lookup-self").await.unwrap();
     }
 
-    #[test]
-    fn can_list_kv() {
+    #[tokio::test]
+    async fn can_list_kv() {
         let client = vault_client();
-        let _ = client.list("secrets").unwrap();
+        let _ = client.list("secrets").await.unwrap();
     }
 }

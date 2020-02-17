@@ -77,7 +77,8 @@ pub struct Credentials {
 #[async_trait]
 pub trait Aws {
     /// Configure the Root IAM Credentials that Vault uses to communicate with AWS
-    async fn configure_root(&self, path: &str, config: &RootCredentials) -> Result<Response, Error>;
+    async fn configure_root(&self, path: &str, config: &RootCredentials)
+        -> Result<Response, Error>;
     /// Rotate Root IAM Credentials
     ///
     /// See [warnings](https://www.vaultproject.io/api/secret/aws/index.html#rotate-root-iam-credentials)
@@ -113,7 +114,11 @@ impl<T> Aws for T
 where
     T: crate::Vault + Send + Sync,
 {
-    async fn configure_root(&self, path: &str, config: &RootCredentials) -> Result<Response, Error> {
+    async fn configure_root(
+        &self,
+        path: &str,
+        config: &RootCredentials,
+    ) -> Result<Response, Error> {
         let values = serde_json::to_value(config)?;
         let path = format!("{}/config/root", path);
         self.post(&path, &values, false).await
@@ -173,8 +178,8 @@ mod tests {
     use super::*;
     use crate::sys::mounts::tests::Mount;
 
-    #[test]
-    fn can_configure() {
+    #[tokio::test(threaded_scheduler)]
+    async fn can_configure() {
         let client = crate::tests::vault_client();
 
         let path = crate::tests::uuid_prefix("aws");
@@ -184,7 +189,7 @@ mod tests {
             ..Default::default()
         };
 
-        let mount = Mount::new(&client, &engine);
+        let mount = Mount::new(&client, &engine).await;
         let config = RootCredentials {
             max_retries: -1,
             access_key: "aaa".to_string(),
@@ -194,17 +199,21 @@ mod tests {
             sts_endpoint: Some("http://aws_sts:8000".to_string()),
         };
 
-        let response = Aws::configure_root(&client, &mount.path, &config).unwrap();
+        let response = Aws::configure_root(&client, &mount.path, &config)
+            .await
+            .unwrap();
         assert!(response.ok().unwrap().is_none());
 
         let lease = Lease {
             lease: "1h".to_string(),
             lease_max: "24h".to_string(),
         };
-        let response = Aws::configure_lease(&client, &mount.path, &lease).unwrap();
+        let response = Aws::configure_lease(&client, &mount.path, &lease)
+            .await
+            .unwrap();
         assert!(response.ok().unwrap().is_none());
 
-        let actual_lease = Aws::read_lease(&client, &mount.path).unwrap();
+        let actual_lease = Aws::read_lease(&client, &mount.path).await.unwrap();
         assert_eq!(actual_lease.lease, "1h0m0s");
         assert_eq!(actual_lease.lease_max, "24h0m0s");
     }

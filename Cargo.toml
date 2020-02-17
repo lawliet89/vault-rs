@@ -16,4 +16,5 @@ log = "0.4"
 url = "2.1"
 
 [dev-dependencies]
+tokio = { version = "0.2", features=["macros", "rt-threaded"] }
 uuid = { version = "0.8", features=["v4"] }

@@ -226,8 +226,8 @@ mod tests {
     use super::*;
     use crate::sys::mounts::tests::Mount;
 
-    #[test]
-    fn can_create_key() {
+    #[tokio::test(threaded_scheduler)]
+    async fn can_create_key() {
         let client = crate::tests::vault_client();
 
         let path = crate::tests::uuid_prefix("transit");
@@ -237,20 +237,22 @@ mod tests {
             ..Default::default()
         };
 
-        let mount = Mount::new(&client, &engine);
+        let mount = Mount::new(&client, &engine).await;
         let create_key = CreateKey {
             name: "test".to_string(),
             r#type: KeyType::RSA4096,
             ..Default::default()
         };
-        let response = Transit::create_key(&client, &mount.path, &create_key).unwrap();
+        let response = Transit::create_key(&client, &mount.path, &create_key)
+            .await
+            .unwrap();
         assert!(response.ok().unwrap().is_none());
 
         // Read key
-        let _key = Transit::read_key(&client, &path, "test").unwrap();
+        let _key = Transit::read_key(&client, &path, "test").await.unwrap();
 
         // List keys
-        let keys = Transit::list_keys(&client, &path).unwrap();
+        let keys = Transit::list_keys(&client, &path).await.unwrap();
         assert_eq!(vec!["test"], keys);
     }
 }
