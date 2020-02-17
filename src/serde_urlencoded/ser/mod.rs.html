@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_urlencoded-0.5.5/src/ser/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../serde_urlencoded/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_urlencoded-0.6.1/src/ser/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../serde_urlencoded/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -581,13 +581,13 @@
 <span class="doccomment">///   unit structs and unit variants.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// * Newtype structs defer to their inner values.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Serializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> {
-    <span class="ident">urlencoder</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="ident">Target</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Serializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> {
+    <span class="ident">urlencoder</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="ident">Target</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> <span class="ident">Serializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> <span class="ident">Serializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Returns a new `Serializer`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">urlencoder</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="ident">Target</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">urlencoder</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="ident">Target</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">Serializer</span> {
             <span class="ident">urlencoder</span>: <span class="ident">urlencoder</span>,
         }
@@ -634,62 +634,62 @@
 }
 
 <span class="doccomment">/// Sequence serializer.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SeqSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> {
-    <span class="ident">urlencoder</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="ident">Target</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SeqSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> {
+    <span class="ident">urlencoder</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="ident">Target</span><span class="op">&gt;</span>,
 }
 
 <span class="doccomment">/// Tuple serializer.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Mostly used for arrays.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TupleSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> {
-    <span class="ident">urlencoder</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="ident">Target</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TupleSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> {
+    <span class="ident">urlencoder</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="ident">Target</span><span class="op">&gt;</span>,
 }
 
 <span class="doccomment">/// Tuple struct serializer.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Never instantiated, tuple structs are not supported.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TupleStructSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">T</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> {
-    <span class="ident">inner</span>: <span class="ident">ser</span>::<span class="ident">Impossible</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TupleStructSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">T</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> {
+    <span class="ident">inner</span>: <span class="ident">ser</span>::<span class="ident">Impossible</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>,
 }
 
 <span class="doccomment">/// Tuple variant serializer.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Never instantiated, tuple variants are not supported.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TupleVariantSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">T</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> {
-    <span class="ident">inner</span>: <span class="ident">ser</span>::<span class="ident">Impossible</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TupleVariantSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">T</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> {
+    <span class="ident">inner</span>: <span class="ident">ser</span>::<span class="ident">Impossible</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>,
 }
 
 <span class="doccomment">/// Map serializer.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MapSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> {
-    <span class="ident">urlencoder</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="ident">Target</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MapSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> {
+    <span class="ident">urlencoder</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="ident">Target</span><span class="op">&gt;</span>,
     <span class="ident">key</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
 <span class="doccomment">/// Struct serializer.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">StructSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> {
-    <span class="ident">urlencoder</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="ident">Target</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">StructSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> {
+    <span class="ident">urlencoder</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="ident">Target</span><span class="op">&gt;</span>,
 }
 
 <span class="doccomment">/// Struct variant serializer.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Never instantiated, struct variants are not supported.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">StructVariantSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">T</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> {
-    <span class="ident">inner</span>: <span class="ident">ser</span>::<span class="ident">Impossible</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">StructVariantSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">T</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span><span class="op">&gt;</span> {
+    <span class="ident">inner</span>: <span class="ident">ser</span>::<span class="ident">Impossible</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> <span class="ident">ser</span>::<span class="ident">Serializer</span> <span class="kw">for</span> <span class="ident">Serializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> <span class="ident">ser</span>::<span class="ident">Serializer</span> <span class="kw">for</span> <span class="ident">Serializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span>,
 {
-    <span class="kw">type</span> <span class="prelude-val">Ok</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="ident">Target</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="prelude-val">Ok</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
-    <span class="kw">type</span> <span class="ident">SerializeSeq</span> <span class="op">=</span> <span class="ident">SeqSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
-    <span class="kw">type</span> <span class="ident">SerializeTuple</span> <span class="op">=</span> <span class="ident">TupleSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
-    <span class="kw">type</span> <span class="ident">SerializeTupleStruct</span> <span class="op">=</span> <span class="ident">TupleStructSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
-    <span class="kw">type</span> <span class="ident">SerializeTupleVariant</span> <span class="op">=</span> <span class="ident">TupleVariantSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
-    <span class="kw">type</span> <span class="ident">SerializeMap</span> <span class="op">=</span> <span class="ident">MapSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
-    <span class="kw">type</span> <span class="ident">SerializeStruct</span> <span class="op">=</span> <span class="ident">StructSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
-    <span class="kw">type</span> <span class="ident">SerializeStructVariant</span> <span class="op">=</span> <span class="ident">StructVariantSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">SerializeSeq</span> <span class="op">=</span> <span class="ident">SeqSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">SerializeTuple</span> <span class="op">=</span> <span class="ident">TupleSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">SerializeTupleStruct</span> <span class="op">=</span> <span class="ident">TupleStructSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">SerializeTupleVariant</span> <span class="op">=</span> <span class="ident">TupleVariantSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">SerializeMap</span> <span class="op">=</span> <span class="ident">MapSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">SerializeStruct</span> <span class="op">=</span> <span class="ident">StructSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">SerializeStructVariant</span> <span class="op">=</span> <span class="ident">StructVariantSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Returns an error.</span>
     <span class="kw">fn</span> <span class="ident">serialize_bool</span>(<span class="self">self</span>, <span class="ident">_v</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="prelude-val">Ok</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
@@ -766,12 +766,12 @@
         <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">top_level</span>())
     }
 
-    <span class="doccomment">/// Returns an error.</span>
+    <span class="doccomment">/// Returns `Ok`.</span>
     <span class="kw">fn</span> <span class="ident">serialize_unit_struct</span>(
         <span class="self">self</span>,
         <span class="ident">_name</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="prelude-val">Ok</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">top_level</span>())
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">urlencoder</span>)
     }
 
     <span class="doccomment">/// Returns an error.</span>
@@ -891,11 +891,11 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> <span class="ident">ser</span>::<span class="ident">SerializeSeq</span> <span class="kw">for</span> <span class="ident">SeqSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> <span class="ident">ser</span>::<span class="ident">SerializeSeq</span> <span class="kw">for</span> <span class="ident">SeqSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span>,
 {
-    <span class="kw">type</span> <span class="prelude-val">Ok</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="ident">Target</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="prelude-val">Ok</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
 
     <span class="kw">fn</span> <span class="ident">serialize_element</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="question-mark">?</span><span class="ident">Sized</span> <span class="op">+</span> <span class="ident">ser</span>::<span class="ident">Serialize</span><span class="op">&gt;</span>(
@@ -910,11 +910,11 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> <span class="ident">ser</span>::<span class="ident">SerializeTuple</span> <span class="kw">for</span> <span class="ident">TupleSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> <span class="ident">ser</span>::<span class="ident">SerializeTuple</span> <span class="kw">for</span> <span class="ident">TupleSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span>,
 {
-    <span class="kw">type</span> <span class="prelude-val">Ok</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="ident">Target</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="prelude-val">Ok</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
 
     <span class="kw">fn</span> <span class="ident">serialize_element</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="question-mark">?</span><span class="ident">Sized</span> <span class="op">+</span> <span class="ident">ser</span>::<span class="ident">Serialize</span><span class="op">&gt;</span>(
@@ -929,12 +929,12 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> <span class="ident">ser</span>::<span class="ident">SerializeTupleStruct</span>
-    <span class="kw">for</span> <span class="ident">TupleStructSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> <span class="ident">ser</span>::<span class="ident">SerializeTupleStruct</span>
+    <span class="kw">for</span> <span class="ident">TupleStructSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span>,
 {
-    <span class="kw">type</span> <span class="prelude-val">Ok</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="ident">Target</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="prelude-val">Ok</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
 
     <span class="kw">fn</span> <span class="ident">serialize_field</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="question-mark">?</span><span class="ident">Sized</span> <span class="op">+</span> <span class="ident">ser</span>::<span class="ident">Serialize</span><span class="op">&gt;</span>(
@@ -949,12 +949,12 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> <span class="ident">ser</span>::<span class="ident">SerializeTupleVariant</span>
-    <span class="kw">for</span> <span class="ident">TupleVariantSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> <span class="ident">ser</span>::<span class="ident">SerializeTupleVariant</span>
+    <span class="kw">for</span> <span class="ident">TupleVariantSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span>,
 {
-    <span class="kw">type</span> <span class="prelude-val">Ok</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="ident">Target</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="prelude-val">Ok</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
 
     <span class="kw">fn</span> <span class="ident">serialize_field</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="question-mark">?</span><span class="ident">Sized</span> <span class="op">+</span> <span class="ident">ser</span>::<span class="ident">Serialize</span><span class="op">&gt;</span>(
@@ -969,11 +969,11 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> <span class="ident">ser</span>::<span class="ident">SerializeMap</span> <span class="kw">for</span> <span class="ident">MapSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> <span class="ident">ser</span>::<span class="ident">SerializeMap</span> <span class="kw">for</span> <span class="ident">MapSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span>,
 {
-    <span class="kw">type</span> <span class="prelude-val">Ok</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="ident">Target</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="prelude-val">Ok</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
 
     <span class="kw">fn</span> <span class="ident">serialize_entry</span><span class="op">&lt;</span>
@@ -1022,11 +1022,11 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> <span class="ident">ser</span>::<span class="ident">SerializeStruct</span> <span class="kw">for</span> <span class="ident">StructSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> <span class="ident">ser</span>::<span class="ident">SerializeStruct</span> <span class="kw">for</span> <span class="ident">StructSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span>,
 {
-    <span class="kw">type</span> <span class="prelude-val">Ok</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="ident">Target</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="prelude-val">Ok</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
 
     <span class="kw">fn</span> <span class="ident">serialize_field</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="question-mark">?</span><span class="ident">Sized</span> <span class="op">+</span> <span class="ident">ser</span>::<span class="ident">Serialize</span><span class="op">&gt;</span>(
@@ -1043,12 +1043,12 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> <span class="ident">ser</span>::<span class="ident">SerializeStructVariant</span>
-    <span class="kw">for</span> <span class="ident">StructVariantSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span> <span class="ident">ser</span>::<span class="ident">SerializeStructVariant</span>
+    <span class="kw">for</span> <span class="ident">StructVariantSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;output</span>, <span class="ident">Target</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">Target</span>: <span class="lifetime">&#39;output</span> <span class="op">+</span> <span class="ident">UrlEncodedTarget</span>,
 {
-    <span class="kw">type</span> <span class="prelude-val">Ok</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="ident">Target</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="prelude-val">Ok</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;output</span> <span class="kw-2">mut</span> <span class="ident">UrlEncodedSerializer</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="ident">Target</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
 
     <span class="kw">fn</span> <span class="ident">serialize_field</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="question-mark">?</span><span class="ident">Sized</span> <span class="op">+</span> <span class="ident">ser</span>::<span class="ident">Serialize</span><span class="op">&gt;</span>(
