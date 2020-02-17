@@ -3,6 +3,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::Error;
 
+use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::map::Map;
 use serde_json::Value;
@@ -101,29 +102,31 @@ pub enum ListingVisibility {
 }
 
 /// Implements the [`/sys/mounts`](https://www.vaultproject.io/api/system/mounts.html) endpoint
+#[async_trait]
 pub trait Mounts {
     /// List all the mounted secrets engine
-    fn list(&self) -> Result<HashMap<String, SecretEngine>, Error>;
+    async fn list(&self) -> Result<HashMap<String, SecretEngine>, Error>;
 
     /// Enable a secrets Engine
-    fn enable(&self, engine: &SecretEngine) -> Result<crate::Response, Error>;
+    async fn enable(&self, engine: &SecretEngine) -> Result<crate::Response, Error>;
 
     /// Disable a secrets engine
-    fn disable(&self, path: &str) -> Result<crate::Response, Error>;
+    async fn disable(&self, path: &str) -> Result<crate::Response, Error>;
 
     /// Get the configuration for a mount
-    fn get(&self, path: &str) -> Result<SecretsEngineConfig, Error>;
+    async fn get(&self, path: &str) -> Result<SecretsEngineConfig, Error>;
 
     /// Tune the configuration for a mount
-    fn tune(&self, path: &str, config: &SecretsEngineTune) -> Result<crate::Response, Error>;
+    async fn tune(&self, path: &str, config: &SecretsEngineTune) -> Result<crate::Response, Error>;
 }
 
+#[async_trait]
 impl<T> Mounts for T
 where
-    T: crate::Vault,
+    T: crate::Vault + Send + Sync,
 {
-    fn list(&self) -> Result<HashMap<String, SecretEngine>, Error> {
-        let values: HashMap<String, Map<String, Value>> = self.get("sys/mounts")?.data()?;
+    async fn list(&self) -> Result<HashMap<String, SecretEngine>, Error> {
+        let values: HashMap<String, Map<String, Value>> = self.get("sys/mounts").await?.data()?;
 
         let values: Result<HashMap<String, SecretEngine>, Error> = values
             .into_iter()
@@ -143,26 +146,26 @@ where
         Ok(values?)
     }
 
-    fn enable(&self, engine: &SecretEngine) -> Result<crate::Response, Error> {
+    async fn enable(&self, engine: &SecretEngine) -> Result<crate::Response, Error> {
         let mut value = serde_json::to_value(engine)?;
         let path = value["path"].take();
         let path = format!("sys/mounts/{}", path.as_str().expect("To be a string"));
-        self.post(&path, &value, false)
+        self.post(&path, &value, false).await
     }
 
-    fn disable(&self, path: &str) -> Result<crate::Response, Error> {
+    async fn disable(&self, path: &str) -> Result<crate::Response, Error> {
         let path = format!("sys/mounts/{}", path);
-        self.delete(&path, false)
+        self.delete(&path, false).await
     }
 
-    fn get(&self, path: &str) -> Result<SecretsEngineConfig, Error> {
+    async fn get(&self, path: &str) -> Result<SecretsEngineConfig, Error> {
         let path = format!("sys/mounts/{}/tune", path);
-        self.get(&path)?.data()
+        self.get(&path).await?.data()
     }
 
-    fn tune(&self, path: &str, config: &SecretsEngineTune) -> Result<crate::Response, Error> {
+    async fn tune(&self, path: &str, config: &SecretsEngineTune) -> Result<crate::Response, Error> {
         let path = format!("sys/mounts/{}/tune", path);
-        self.post(&path, config, false)
+        self.post(&path, config, false).await
     }
 }
 

@@ -5,6 +5,7 @@ use crate::{Error, Response};
 
 use std::collections::HashMap;
 
+use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::map::Map;
 use serde_json::Value;
@@ -105,7 +106,7 @@ pub struct ConfigureKey {
     /// Specifies the minimum version of ciphertext allowed to be decrypted.
     /// Adjusting this as part of a key rotation policy can prevent old copies of
     /// ciphertext from being decrypted, should they fall into the wrong hands.
-    /// For signatures, this value controls the minimum version of signature that can be
+    /// For signatures, this value contasync rols the minimum version of signature that can be
     /// verified against. For HMACs, this controls the minimum version of a key allowed to
     /// be used as the key for verification.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -155,17 +156,18 @@ impl Default for KeyType {
 /// Transit Secrets Engine
 ///
 /// See the [documentation](https://www.vaultproject.io/api/secret/transit/index.html).
+#[async_trait]
 pub trait Transit {
     /// Create a new named encryption key
-    fn create_key(&self, path: &str, key: &CreateKey) -> Result<Response, Error>;
+    async fn create_key(&self, path: &str, key: &CreateKey) -> Result<Response, Error>;
     /// Read a named key
-    fn read_key(&self, path: &str, key: &str) -> Result<Key, Error>;
+    async fn read_key(&self, path: &str, key: &str) -> Result<Key, Error>;
     /// List keys
-    fn list_keys(&self, path: &str) -> Result<Vec<String>, Error>;
+    async fn list_keys(&self, path: &str) -> Result<Vec<String>, Error>;
     /// Delete Key
-    fn delete_key(&self, path: &str, key: &str) -> Result<Response, Error>;
+    async fn delete_key(&self, path: &str, key: &str) -> Result<Response, Error>;
     /// Update Key Configuration
-    fn configure_key(
+    async fn configure_key(
         &self,
         path: &str,
         key: &str,
@@ -173,25 +175,26 @@ pub trait Transit {
     ) -> Result<Response, Error>;
 }
 
+#[async_trait]
 impl<T> Transit for T
 where
-    T: crate::Vault,
+    T: crate::Vault + Send + Sync,
 {
-    fn create_key(&self, path: &str, key: &CreateKey) -> Result<Response, Error> {
+    async fn create_key(&self, path: &str, key: &CreateKey) -> Result<Response, Error> {
         let mut values = serde_json::to_value(key)?;
         let name = values["name"].take();
         let path = format!("{}/keys/{}", path, name.as_str().expect("To be a string"));
-        self.post(&path, &values, false)
+        self.post(&path, &values, false).await
     }
 
-    fn read_key(&self, path: &str, key: &str) -> Result<Key, Error> {
+    async fn read_key(&self, path: &str, key: &str) -> Result<Key, Error> {
         let path = format!("{}/keys/{}", path, key);
-        self.get(&path)?.data()
+        self.get(&path).await?.data()
     }
 
-    fn list_keys(&self, path: &str) -> Result<Vec<String>, Error> {
+    async fn list_keys(&self, path: &str) -> Result<Vec<String>, Error> {
         let path = format!("{}/keys", path);
-        let data: Map<String, Value> = self.list(&path)?.data()?;
+        let data: Map<String, Value> = self.list(&path).await?.data()?;
         let keys = data.get("keys").ok_or_else(|| Error::MalformedResponse)?;
         let keys = keys.as_array().ok_or_else(|| Error::MalformedResponse)?;
         let keys: Result<Vec<&str>, Error> = keys
@@ -202,19 +205,19 @@ where
         Ok(keys?.iter().map(|s| (*s).to_string()).collect())
     }
 
-    fn delete_key(&self, path: &str, key: &str) -> Result<Response, Error> {
+    async fn delete_key(&self, path: &str, key: &str) -> Result<Response, Error> {
         let path = format!("{}/keys/{}", path, key);
-        self.delete(&path, false)
+        self.delete(&path, false).await
     }
 
-    fn configure_key(
+    async fn configure_key(
         &self,
         path: &str,
         key: &str,
         configuration: &ConfigureKey,
     ) -> Result<Response, Error> {
         let path = format!("{}/keys/{}/config", path, key);
-        self.post(&path, configuration, false)
+        self.post(&path, configuration, false).await
     }
 }
 
