@@ -199,7 +199,7 @@ where
             .map(|s| s.as_str().ok_or_else(|| Error::MalformedResponse))
             .collect();
 
-        Ok(keys?.iter().map(|s| s.to_string()).collect())
+        Ok(keys?.iter().map(|s| (*s).to_string()).collect())
     }
 
     fn delete_key(&self, path: &str, key: &str) -> Result<Response, Error> {

@@ -2,7 +2,6 @@
 //!
 //! This is a thin wrapper around the HTTP API for [Vault](https://www.vaultproject.io/).
 #![allow(
-    legacy_directory_ownership,
     missing_copy_implementations,
     missing_debug_implementations,
     unknown_lints
@@ -21,7 +20,6 @@
     non_upper_case_globals,
     overflowing_literals,
     path_statements,
-    plugin_as_library,
     stable_features,
     trivial_casts,
     trivial_numeric_casts,
@@ -404,7 +402,7 @@ impl Client {
         let mut response = client.execute(request)?;
         let body = response.text()?;
         if !body.is_empty() {
-            Err(Error::UnexpectedResponse(body))?;
+            return Err(Error::UnexpectedResponse(body));
         }
         debug!("Response received: {:#?}", response);
         Ok(())

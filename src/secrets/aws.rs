@@ -176,7 +176,7 @@ mod tests {
 
         let path = crate::tests::uuid_prefix("aws");
         let engine = crate::sys::mounts::SecretEngine {
-            path: path.clone(),
+            path,
             r#type: "aws".to_string(),
             ..Default::default()
         };
