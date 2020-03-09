@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `sync` mod in crate `tokio`."><meta name="keywords" content="rust, rustlang, rust-lang, sync"><title>tokio::sync - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../tokio/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a><p class='location'>Module sync</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li></ul></div><p class='location'><a href='../index.html'>tokio</a></p><script>window.sidebarCurrent = {name: 'sync', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../src/tokio/sync/mod.rs.html#1-459' title='goto source code'>[src]</a></span><span class='in-band'>Module <a href='../index.html'>tokio</a>::<wbr><a class="mod" href=''>sync</a></span></h1><div class='docblock'><p>Synchronization primitives for use in asynchronous contexts.</p>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `sync` mod in crate `tokio`."><meta name="keywords" content="rust, rustlang, rust-lang, sync"><title>tokio::sync - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../tokio/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a><p class='location'>Module sync</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li></ul></div><p class='location'><a href='../index.html'>tokio</a></p><script>window.sidebarCurrent = {name: 'sync', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../src/tokio/sync/mod.rs.html#1-471' title='goto source code'>[src]</a></span><span class='in-band'>Module <a href='../index.html'>tokio</a>::<wbr><a class="mod" href=''>sync</a></span></h1><div class='docblock'><p>Synchronization primitives for use in asynchronous contexts.</p>
 <p>Tokio programs tend to be organized as a set of <a href="crate::task">tasks</a> where each task
 operates independently and may be executed on separate physical threads. The
 synchronization primitives provided in this module permit these independent
@@ -201,7 +201,7 @@ sent over the provided <code>oneshot</code> channel.</p>
     }
 }</pre></div>
 <h2 id="broadcast-channel" class="section-header"><a href="#broadcast-channel"><code>broadcast</code> channel</a></h2>
-<p>The [<code>broadcast</code> channel[broadcast] supports sending <strong>many</strong> values from
+<p>The [<code>broadcast</code> channel][broadcast] supports sending <strong>many</strong> values from
 <strong>many</strong> producers to <strong>many</strong> consumers. Each consumer will receive
 <strong>each</strong> value. This channel can be used to implement &quot;fan out&quot; style
 patterns common with pub / sub or &quot;chat&quot; systems.</p>
@@ -352,7 +352,7 @@ changes, the configuration changes are signalled to consumers.</p>
     }
 }</pre></div>
 <h1 id="state-synchronization" class="section-header"><a href="#state-synchronization">State synchronization</a></h1>
-<p>The remainding synchronization primitives focus on synchronizing state.
+<p>The remaining synchronization primitives focus on synchronizing state.
 These are asynchronous equivalents to versions provided by <code>std</code>. They
 operate in a similar way as their <code>std</code> counterparts parts but will wait
 asynchronously instead of blocking the thread.</p>
@@ -366,9 +366,20 @@ reach a point in the program, before continuing execution all together.</p>
 one thread at a time is able to access some data.</p>
 </li>
 <li>
+<p>[<code>Notify</code>][Notify] Basic task notification. <code>Notify</code> supports notifying a
+receiving task without sending data. In this case, the task wakes up and
+resumes processing.</p>
+</li>
+<li>
 <p>[<code>RwLock</code>][RwLock] Provides a mutual exclusion mechanism which allows
 multiple readers at the same time, while allowing only one writer at a
 time. In some cases, this can be more efficient than a mutex.</p>
+</li>
+<li>
+<p>[<code>Semaphore</code>][Semaphore] Limits the amount of concurrency. A semaphore
+holds a number of permits, which tasks may request in order to enter a
+critical section. Semaphores are useful for implementing limiting of
+bounding of any kind.</p>
 </li>
 </ul>
 </div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
@@ -384,6 +395,7 @@ value.</p>
 </td></tr><tr class='module-item'><td><a class="struct" href="struct.BarrierWaitResult.html" title='tokio::sync::BarrierWaitResult struct'>BarrierWaitResult</a></td><td class='docblock-short'><p>A <code>BarrierWaitResult</code> is returned by <code>wait</code> when all threads in the <code>Barrier</code> have rendezvoused.</p>
 </td></tr><tr class='module-item'><td><a class="struct" href="struct.Mutex.html" title='tokio::sync::Mutex struct'>Mutex</a></td><td class='docblock-short'><p>An asynchronous mutual exclusion primitive useful for protecting shared data</p>
 </td></tr><tr class='module-item'><td><a class="struct" href="struct.MutexGuard.html" title='tokio::sync::MutexGuard struct'>MutexGuard</a></td><td class='docblock-short'><p>A handle to a held <code>Mutex</code>.</p>
+</td></tr><tr class='module-item'><td><a class="struct" href="struct.Notify.html" title='tokio::sync::Notify struct'>Notify</a></td><td class='docblock-short'><p>Notify a single task to wake up.</p>
 </td></tr><tr class='module-item'><td><a class="struct" href="struct.RwLock.html" title='tokio::sync::RwLock struct'>RwLock</a></td><td class='docblock-short'><p>An asynchronous reader-writer lock</p>
 </td></tr><tr class='module-item'><td><a class="struct" href="struct.RwLockReadGuard.html" title='tokio::sync::RwLockReadGuard struct'>RwLockReadGuard</a></td><td class='docblock-short'><p>RAII structure used to release the shared read access of a lock when
 dropped.</p>

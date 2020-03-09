@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/reqwest-0.10.1/src/async_impl/client.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>client.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../reqwest/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/reqwest-0.10.4/src/async_impl/client.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>client.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../reqwest/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1281,7 +1281,186 @@
 <span id="1281">1281</span>
 <span id="1282">1282</span>
 <span id="1283">1283</span>
+<span id="1284">1284</span>
+<span id="1285">1285</span>
+<span id="1286">1286</span>
+<span id="1287">1287</span>
+<span id="1288">1288</span>
+<span id="1289">1289</span>
+<span id="1290">1290</span>
+<span id="1291">1291</span>
+<span id="1292">1292</span>
+<span id="1293">1293</span>
+<span id="1294">1294</span>
+<span id="1295">1295</span>
+<span id="1296">1296</span>
+<span id="1297">1297</span>
+<span id="1298">1298</span>
+<span id="1299">1299</span>
+<span id="1300">1300</span>
+<span id="1301">1301</span>
+<span id="1302">1302</span>
+<span id="1303">1303</span>
+<span id="1304">1304</span>
+<span id="1305">1305</span>
+<span id="1306">1306</span>
+<span id="1307">1307</span>
+<span id="1308">1308</span>
+<span id="1309">1309</span>
+<span id="1310">1310</span>
+<span id="1311">1311</span>
+<span id="1312">1312</span>
+<span id="1313">1313</span>
+<span id="1314">1314</span>
+<span id="1315">1315</span>
+<span id="1316">1316</span>
+<span id="1317">1317</span>
+<span id="1318">1318</span>
+<span id="1319">1319</span>
+<span id="1320">1320</span>
+<span id="1321">1321</span>
+<span id="1322">1322</span>
+<span id="1323">1323</span>
+<span id="1324">1324</span>
+<span id="1325">1325</span>
+<span id="1326">1326</span>
+<span id="1327">1327</span>
+<span id="1328">1328</span>
+<span id="1329">1329</span>
+<span id="1330">1330</span>
+<span id="1331">1331</span>
+<span id="1332">1332</span>
+<span id="1333">1333</span>
+<span id="1334">1334</span>
+<span id="1335">1335</span>
+<span id="1336">1336</span>
+<span id="1337">1337</span>
+<span id="1338">1338</span>
+<span id="1339">1339</span>
+<span id="1340">1340</span>
+<span id="1341">1341</span>
+<span id="1342">1342</span>
+<span id="1343">1343</span>
+<span id="1344">1344</span>
+<span id="1345">1345</span>
+<span id="1346">1346</span>
+<span id="1347">1347</span>
+<span id="1348">1348</span>
+<span id="1349">1349</span>
+<span id="1350">1350</span>
+<span id="1351">1351</span>
+<span id="1352">1352</span>
+<span id="1353">1353</span>
+<span id="1354">1354</span>
+<span id="1355">1355</span>
+<span id="1356">1356</span>
+<span id="1357">1357</span>
+<span id="1358">1358</span>
+<span id="1359">1359</span>
+<span id="1360">1360</span>
+<span id="1361">1361</span>
+<span id="1362">1362</span>
+<span id="1363">1363</span>
+<span id="1364">1364</span>
+<span id="1365">1365</span>
+<span id="1366">1366</span>
+<span id="1367">1367</span>
+<span id="1368">1368</span>
+<span id="1369">1369</span>
+<span id="1370">1370</span>
+<span id="1371">1371</span>
+<span id="1372">1372</span>
+<span id="1373">1373</span>
+<span id="1374">1374</span>
+<span id="1375">1375</span>
+<span id="1376">1376</span>
+<span id="1377">1377</span>
+<span id="1378">1378</span>
+<span id="1379">1379</span>
+<span id="1380">1380</span>
+<span id="1381">1381</span>
+<span id="1382">1382</span>
+<span id="1383">1383</span>
+<span id="1384">1384</span>
+<span id="1385">1385</span>
+<span id="1386">1386</span>
+<span id="1387">1387</span>
+<span id="1388">1388</span>
+<span id="1389">1389</span>
+<span id="1390">1390</span>
+<span id="1391">1391</span>
+<span id="1392">1392</span>
+<span id="1393">1393</span>
+<span id="1394">1394</span>
+<span id="1395">1395</span>
+<span id="1396">1396</span>
+<span id="1397">1397</span>
+<span id="1398">1398</span>
+<span id="1399">1399</span>
+<span id="1400">1400</span>
+<span id="1401">1401</span>
+<span id="1402">1402</span>
+<span id="1403">1403</span>
+<span id="1404">1404</span>
+<span id="1405">1405</span>
+<span id="1406">1406</span>
+<span id="1407">1407</span>
+<span id="1408">1408</span>
+<span id="1409">1409</span>
+<span id="1410">1410</span>
+<span id="1411">1411</span>
+<span id="1412">1412</span>
+<span id="1413">1413</span>
+<span id="1414">1414</span>
+<span id="1415">1415</span>
+<span id="1416">1416</span>
+<span id="1417">1417</span>
+<span id="1418">1418</span>
+<span id="1419">1419</span>
+<span id="1420">1420</span>
+<span id="1421">1421</span>
+<span id="1422">1422</span>
+<span id="1423">1423</span>
+<span id="1424">1424</span>
+<span id="1425">1425</span>
+<span id="1426">1426</span>
+<span id="1427">1427</span>
+<span id="1428">1428</span>
+<span id="1429">1429</span>
+<span id="1430">1430</span>
+<span id="1431">1431</span>
+<span id="1432">1432</span>
+<span id="1433">1433</span>
+<span id="1434">1434</span>
+<span id="1435">1435</span>
+<span id="1436">1436</span>
+<span id="1437">1437</span>
+<span id="1438">1438</span>
+<span id="1439">1439</span>
+<span id="1440">1440</span>
+<span id="1441">1441</span>
+<span id="1442">1442</span>
+<span id="1443">1443</span>
+<span id="1444">1444</span>
+<span id="1445">1445</span>
+<span id="1446">1446</span>
+<span id="1447">1447</span>
+<span id="1448">1448</span>
+<span id="1449">1449</span>
+<span id="1450">1450</span>
+<span id="1451">1451</span>
+<span id="1452">1452</span>
+<span id="1453">1453</span>
+<span id="1454">1454</span>
+<span id="1455">1455</span>
+<span id="1456">1456</span>
+<span id="1457">1457</span>
 </pre><div class="example-wrap"><pre class="rust ">
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(
+    <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;native-tls&quot;</span>,
+    <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rustls-tls&quot;</span>,
+))]</span>
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">any</span>::<span class="ident">Any</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryInto</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">net</span>::<span class="ident">IpAddr</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">Arc</span>;
@@ -1295,8 +1474,8 @@
     <span class="ident">Entry</span>, <span class="ident">HeaderMap</span>, <span class="ident">HeaderValue</span>, <span class="ident">ACCEPT</span>, <span class="ident">ACCEPT_ENCODING</span>, <span class="ident">CONTENT_ENCODING</span>, <span class="ident">CONTENT_LENGTH</span>,
     <span class="ident">CONTENT_TYPE</span>, <span class="ident">LOCATION</span>, <span class="ident">PROXY_AUTHORIZATION</span>, <span class="ident">RANGE</span>, <span class="ident">REFERER</span>, <span class="ident">TRANSFER_ENCODING</span>, <span class="ident">USER_AGENT</span>,
 };
-<span class="kw">use</span> <span class="ident">http</span>::<span class="ident">Uri</span>;
 <span class="kw">use</span> <span class="ident">http</span>::<span class="ident">uri</span>::<span class="ident">Scheme</span>;
+<span class="kw">use</span> <span class="ident">http</span>::<span class="ident">Uri</span>;
 <span class="kw">use</span> <span class="ident">hyper</span>::<span class="ident">client</span>::<span class="ident">ResponseFuture</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;native-tls-crate&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">native_tls_crate</span>::<span class="ident">TlsConnector</span>;
@@ -1307,10 +1486,11 @@
 
 <span class="kw">use</span> <span class="ident">log</span>::<span class="ident">debug</span>;
 
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">decoder</span>::<span class="ident">Accepts</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">request</span>::{<span class="ident">Request</span>, <span class="ident">RequestBuilder</span>};
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">response</span>::<span class="ident">Response</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">Body</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">connect</span>::<span class="ident">Connector</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">connect</span>::{<span class="ident">Connector</span>, <span class="ident">HttpConnector</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cookies&quot;</span>)]</span>
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">cookie</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">into_url</span>::{<span class="ident">expect_uri</span>, <span class="ident">try_uri</span>};
@@ -1341,7 +1521,7 @@
 
 <span class="kw">struct</span> <span class="ident">Config</span> {
     <span class="comment">// NOTE: When adding a new field, update `fmt::Debug for ClientBuilder`</span>
-    <span class="ident">gzip</span>: <span class="ident">bool</span>,
+    <span class="ident">accepts</span>: <span class="ident">Accepts</span>,
     <span class="ident">headers</span>: <span class="ident">HeaderMap</span>,
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;native-tls&quot;</span>)]</span>
     <span class="ident">hostname_verification</span>: <span class="ident">bool</span>,
@@ -1369,6 +1549,7 @@
     <span class="ident">nodelay</span>: <span class="ident">bool</span>,
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cookies&quot;</span>)]</span>
     <span class="ident">cookie_store</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">cookie</span>::<span class="ident">CookieStore</span><span class="op">&gt;</span>,
+    <span class="ident">trust_dns</span>: <span class="ident">bool</span>,
     <span class="ident">error</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">crate</span>::<span class="ident">Error</span><span class="op">&gt;</span>,
 }
 
@@ -1389,7 +1570,7 @@
         <span class="ident">ClientBuilder</span> {
             <span class="ident">config</span>: <span class="ident">Config</span> {
                 <span class="ident">error</span>: <span class="prelude-val">None</span>,
-                <span class="ident">gzip</span>: <span class="macro">cfg</span><span class="macro">!</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;gzip&quot;</span>),
+                <span class="ident">accepts</span>: <span class="ident">Accepts</span>::<span class="ident">default</span>(),
                 <span class="ident">headers</span>,
                 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;native-tls&quot;</span>)]</span>
                 <span class="ident">hostname_verification</span>: <span class="bool-val">true</span>,
@@ -1415,6 +1596,7 @@
                 <span class="ident">http2_initial_connection_window_size</span>: <span class="prelude-val">None</span>,
                 <span class="ident">local_address</span>: <span class="prelude-val">None</span>,
                 <span class="ident">nodelay</span>: <span class="bool-val">false</span>,
+                <span class="ident">trust_dns</span>: <span class="macro">cfg</span><span class="macro">!</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;trust-dns&quot;</span>),
                 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cookies&quot;</span>)]</span>
                 <span class="ident">cookie_store</span>: <span class="prelude-val">None</span>,
             },
@@ -1446,6 +1628,14 @@
                 <span class="ident">headers</span>.<span class="ident">get</span>(<span class="ident">USER_AGENT</span>).<span class="ident">cloned</span>()
             }
 
+            <span class="kw">let</span> <span class="ident">http</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">config</span>.<span class="ident">trust_dns</span> {
+                <span class="bool-val">false</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">HttpConnector</span>::<span class="ident">new_gai</span>(),
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;trust-dns&quot;</span>)]</span>
+                <span class="bool-val">true</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">HttpConnector</span>::<span class="ident">new_trust_dns</span>()<span class="question-mark">?</span>,
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;trust-dns&quot;</span>))]</span>
+                <span class="bool-val">true</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(<span class="string">&quot;trust-dns shouldn&#39;t be enabled unless the feature is&quot;</span>),
+            };
+
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;__tls&quot;</span>)]</span>
             <span class="kw">match</span> <span class="ident">config</span>.<span class="ident">tls</span> {
                 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;default-tls&quot;</span>)]</span>
@@ -1463,7 +1653,6 @@
                         <span class="ident">cert</span>.<span class="ident">add_to_native_tls</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">tls</span>);
                     }
 
-
                     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;native-tls&quot;</span>)]</span>
                     {
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">id</span>) <span class="op">=</span> <span class="ident">config</span>.<span class="ident">identity</span> {
@@ -1471,14 +1660,36 @@
                         }
                     }
 
+
                     <span class="ident">Connector</span>::<span class="ident">new_default_tls</span>(
+                        <span class="ident">http</span>,
                         <span class="ident">tls</span>,
                         <span class="ident">proxies</span>.<span class="ident">clone</span>(),
                         <span class="ident">user_agent</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">headers</span>),
                         <span class="ident">config</span>.<span class="ident">local_address</span>,
                         <span class="ident">config</span>.<span class="ident">nodelay</span>,
                     )<span class="question-mark">?</span>
-                }
+                },
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;native-tls&quot;</span>)]</span>
+                <span class="ident">TlsBackend</span>::<span class="ident">BuiltNativeTls</span>(<span class="ident">conn</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="ident">Connector</span>::<span class="ident">from_built_default_tls</span>(
+                        <span class="ident">http</span>,
+                        <span class="ident">conn</span>,
+                        <span class="ident">proxies</span>.<span class="ident">clone</span>(),
+                        <span class="ident">user_agent</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">headers</span>),
+                        <span class="ident">config</span>.<span class="ident">local_address</span>,
+                        <span class="ident">config</span>.<span class="ident">nodelay</span>)
+                },
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rustls-tls&quot;</span>)]</span>
+                <span class="ident">TlsBackend</span>::<span class="ident">BuiltRustls</span>(<span class="ident">conn</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="ident">Connector</span>::<span class="ident">new_rustls_tls</span>(
+                        <span class="ident">http</span>,
+                        <span class="ident">conn</span>,
+                        <span class="ident">proxies</span>.<span class="ident">clone</span>(),
+                        <span class="ident">user_agent</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">headers</span>),
+                        <span class="ident">config</span>.<span class="ident">local_address</span>,
+                        <span class="ident">config</span>.<span class="ident">nodelay</span>)
+                },
                 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rustls-tls&quot;</span>)]</span>
                 <span class="ident">TlsBackend</span>::<span class="ident">Rustls</span> <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">tls</span>::<span class="ident">NoVerifier</span>;
@@ -1506,17 +1717,27 @@
                     }
 
                     <span class="ident">Connector</span>::<span class="ident">new_rustls_tls</span>(
+                        <span class="ident">http</span>,
                         <span class="ident">tls</span>,
                         <span class="ident">proxies</span>.<span class="ident">clone</span>(),
                         <span class="ident">user_agent</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">headers</span>),
                         <span class="ident">config</span>.<span class="ident">local_address</span>,
                         <span class="ident">config</span>.<span class="ident">nodelay</span>,
-                    )<span class="question-mark">?</span>
-                }
+                    )
+                },
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(
+                    <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;native-tls&quot;</span>,
+                    <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rustls-tls&quot;</span>,
+                ))]</span>
+                <span class="ident">TlsBackend</span>::<span class="ident">UnknownPreconfigured</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="kw">crate</span>::<span class="ident">error</span>::<span class="ident">builder</span>(
+                        <span class="string">&quot;Unknown TLS backend passed to `use_preconfigured_tls`&quot;</span>
+                    ));
+                },
             }
 
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;__tls&quot;</span>))]</span>
-            <span class="ident">Connector</span>::<span class="ident">new</span>(<span class="ident">proxies</span>.<span class="ident">clone</span>(), <span class="ident">config</span>.<span class="ident">local_address</span>, <span class="ident">config</span>.<span class="ident">nodelay</span>)<span class="question-mark">?</span>
+            <span class="ident">Connector</span>::<span class="ident">new</span>(<span class="ident">http</span>, <span class="ident">proxies</span>.<span class="ident">clone</span>(), <span class="ident">config</span>.<span class="ident">local_address</span>, <span class="ident">config</span>.<span class="ident">nodelay</span>)
         };
 
         <span class="ident">connector</span>.<span class="ident">set_timeout</span>(<span class="ident">config</span>.<span class="ident">connect_timeout</span>);
@@ -1530,11 +1751,13 @@
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">http2_initial_stream_window_size</span>) <span class="op">=</span> <span class="ident">config</span>.<span class="ident">http2_initial_stream_window_size</span> {
             <span class="ident">builder</span>.<span class="ident">http2_initial_stream_window_size</span>(<span class="ident">http2_initial_stream_window_size</span>);
         }
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">http2_initial_connection_window_size</span>) <span class="op">=</span> <span class="ident">config</span>.<span class="ident">http2_initial_connection_window_size</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">http2_initial_connection_window_size</span>) <span class="op">=</span>
+            <span class="ident">config</span>.<span class="ident">http2_initial_connection_window_size</span>
+        {
             <span class="ident">builder</span>.<span class="ident">http2_initial_connection_window_size</span>(<span class="ident">http2_initial_connection_window_size</span>);
         }
 
-        <span class="ident">builder</span>.<span class="ident">max_idle_per_host</span>(<span class="ident">config</span>.<span class="ident">max_idle_per_host</span>);
+        <span class="ident">builder</span>.<span class="ident">pool_max_idle_per_host</span>(<span class="ident">config</span>.<span class="ident">max_idle_per_host</span>);
 
         <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">http1_title_case_headers</span> {
             <span class="ident">builder</span>.<span class="ident">http1_title_case_headers</span>(<span class="bool-val">true</span>);
@@ -1546,9 +1769,9 @@
 
         <span class="prelude-val">Ok</span>(<span class="ident">Client</span> {
             <span class="ident">inner</span>: <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">ClientRef</span> {
+                <span class="ident">accepts</span>: <span class="ident">config</span>.<span class="ident">accepts</span>,
                 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cookies&quot;</span>)]</span>
                 <span class="ident">cookie_store</span>: <span class="ident">config</span>.<span class="ident">cookie_store</span>.<span class="ident">map</span>(<span class="ident">RwLock</span>::<span class="ident">new</span>),
-                <span class="ident">gzip</span>: <span class="ident">config</span>.<span class="ident">gzip</span>,
                 <span class="ident">hyper</span>: <span class="ident">hyper_client</span>,
                 <span class="ident">headers</span>: <span class="ident">config</span>.<span class="ident">headers</span>,
                 <span class="ident">redirect_policy</span>: <span class="ident">config</span>.<span class="ident">redirect_policy</span>,
@@ -1561,7 +1784,6 @@
     }
 
     <span class="comment">// Higher-level options</span>
-
 
     <span class="doccomment">/// Sets the `User-Agent` header to be used by this client.</span>
     <span class="doccomment">///</span>
@@ -1644,7 +1866,6 @@
         <span class="self">self</span>
     }
 
-
     <span class="doccomment">/// Enable a persistent cookie store for the client.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Cookies received in responses will be preserved and included in</span>
@@ -1667,7 +1888,7 @@
 
     <span class="doccomment">/// Enable auto gzip decompression by checking the `Content-Encoding` response header.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// If auto gzip decompresson is turned on:</span>
+    <span class="doccomment">/// If auto gzip decompression is turned on:</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// - When sending a request and if the request&#39;s headers do not already contain</span>
     <span class="doccomment">///   an `Accept-Encoding` **and** `Range` values, the `Accept-Encoding` header is set to `gzip`.</span>
@@ -1683,7 +1904,29 @@
     <span class="doccomment">/// This requires the optional `gzip` feature to be enabled</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;gzip&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gzip</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">enable</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ClientBuilder</span> {
-        <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">gzip</span> <span class="op">=</span> <span class="ident">enable</span>;
+        <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">accepts</span>.<span class="ident">gzip</span> <span class="op">=</span> <span class="ident">enable</span>;
+        <span class="self">self</span>
+    }
+
+    <span class="doccomment">/// Enable auto brotli decompression by checking the `Content-Encoding` response header.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If auto brotli decompression is turned on:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// - When sending a request and if the request&#39;s headers do not already contain</span>
+    <span class="doccomment">///   an `Accept-Encoding` **and** `Range` values, the `Accept-Encoding` header is set to `br`.</span>
+    <span class="doccomment">///   The request body is **not** automatically compressed.</span>
+    <span class="doccomment">/// - When receiving a response, if it&#39;s headers contain a `Content-Encoding` value that</span>
+    <span class="doccomment">///   equals to `br`, both values `Content-Encoding` and `Content-Length` are removed from the</span>
+    <span class="doccomment">///   headers&#39; set. The response body is automatically decompressed.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If the `brotli` feature is turned on, the default option is enabled.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Optional</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This requires the optional `brotli` feature to be enabled</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;brotli&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">brotli</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">enable</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ClientBuilder</span> {
+        <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">accepts</span>.<span class="ident">brotli</span> <span class="op">=</span> <span class="ident">enable</span>;
         <span class="self">self</span>
     }
 
@@ -1699,6 +1942,23 @@
         }
 
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;gzip&quot;</span>))]</span>
+        {
+            <span class="self">self</span>
+        }
+    }
+
+    <span class="doccomment">/// Disable auto response body brotli decompression.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This method exists even if the optional `brotli` feature is not enabled.</span>
+    <span class="doccomment">/// This can be used to ensure a `Client` doesn&#39;t use brotli decompression</span>
+    <span class="doccomment">/// even if another dependency were to enable the optional `brotli` feature.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">no_brotli</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ClientBuilder</span> {
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;brotli&quot;</span>)]</span>
+        {
+            <span class="self">self</span>.<span class="ident">brotli</span>(<span class="bool-val">false</span>)
+        }
+
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;brotli&quot;</span>))]</span>
         {
             <span class="self">self</span>
         }
@@ -1818,7 +2078,10 @@
     <span class="doccomment">/// Sets the max connection-level flow control for HTTP2</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Default is currently 65,535 but may change internally to optimize for common uses.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">http2_initial_connection_window_size</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">sz</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ClientBuilder</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">http2_initial_connection_window_size</span>(
+        <span class="kw-2">mut</span> <span class="self">self</span>,
+        <span class="ident">sz</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ClientBuilder</span> {
         <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">http2_initial_connection_window_size</span> <span class="op">=</span> <span class="ident">sz</span>.<span class="ident">into</span>();
         <span class="self">self</span>
     }
@@ -1938,7 +2201,6 @@
         <span class="self">self</span>
     }
 
-
     <span class="doccomment">/// Force using the Rustls TLS backend.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Since multiple TLS backends can be optionally enabled, this option will</span>
@@ -1951,6 +2213,85 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">use_rustls_tls</span>(<span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ClientBuilder</span> {
         <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">tls</span> <span class="op">=</span> <span class="ident">TlsBackend</span>::<span class="ident">Rustls</span>;
         <span class="self">self</span>
+    }
+
+    <span class="doccomment">/// Use a preconfigured TLS backend.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If the passed `Any` argument is not a TLS backend that reqwest</span>
+    <span class="doccomment">/// understands, the `ClientBuilder` will error when calling `build`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Advanced</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This is an advanced option, and can be somewhat brittle. Usage requires</span>
+    <span class="doccomment">/// keeping the preconfigured TLS argument version in sync with reqwest,</span>
+    <span class="doccomment">/// since version mismatches will result in an &quot;unknown&quot; TLS backend.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If possible, it&#39;s preferable to use the methods on `ClientBuilder`</span>
+    <span class="doccomment">/// to configure reqwest&#39;s TLS.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Optional</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This requires one of the optional features `native-tls` or</span>
+    <span class="doccomment">/// `rustls-tls` to be enabled.</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(
+        <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;native-tls&quot;</span>,
+        <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rustls-tls&quot;</span>,
+    ))]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">use_preconfigured_tls</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">tls</span>: <span class="kw">impl</span> <span class="ident">Any</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ClientBuilder</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tls</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">tls</span>);
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;native-tls&quot;</span>)]</span>
+        {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">conn</span>) <span class="op">=</span> (<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">tls</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">Any</span>).<span class="ident">downcast_mut</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">native_tls_crate</span>::<span class="ident">TlsConnector</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
+                <span class="kw">let</span> <span class="ident">tls</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">take</span>().<span class="ident">expect</span>(<span class="string">&quot;is definitely Some&quot;</span>);
+                <span class="kw">let</span> <span class="ident">tls</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">tls</span>::<span class="ident">TlsBackend</span>::<span class="ident">BuiltNativeTls</span>(<span class="ident">tls</span>);
+                <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">tls</span> <span class="op">=</span> <span class="ident">tls</span>;
+                <span class="kw">return</span> <span class="self">self</span>;
+            }
+        }
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rustls-tls&quot;</span>)]</span>
+        {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">conn</span>) <span class="op">=</span> (<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">tls</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">Any</span>).<span class="ident">downcast_mut</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">rustls</span>::<span class="ident">ClientConfig</span><span class="op">&gt;</span><span class="op">&gt;</span>() {
+
+                <span class="kw">let</span> <span class="ident">tls</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">take</span>().<span class="ident">expect</span>(<span class="string">&quot;is definitely Some&quot;</span>);
+                <span class="kw">let</span> <span class="ident">tls</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">tls</span>::<span class="ident">TlsBackend</span>::<span class="ident">BuiltRustls</span>(<span class="ident">tls</span>);
+                <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">tls</span> <span class="op">=</span> <span class="ident">tls</span>;
+                <span class="kw">return</span> <span class="self">self</span>;
+            }
+        }
+
+        <span class="comment">// Otherwise, we don&#39;t recognize the TLS backend!</span>
+        <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">tls</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">tls</span>::<span class="ident">TlsBackend</span>::<span class="ident">UnknownPreconfigured</span>;
+        <span class="self">self</span>
+    }
+
+    <span class="doccomment">/// Enables the [trust-dns](trust_dns_resolver) async resolver instead of a default threadpool using `getaddrinfo`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If the `trust-dns` feature is turned on, the default option is enabled.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Optional</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This requires the optional `trust-dns` feature to be enabled</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;trust-dns&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">trust_dns</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">enable</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ClientBuilder</span> {
+        <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">trust_dns</span> <span class="op">=</span> <span class="ident">enable</span>;
+        <span class="self">self</span>
+    }
+
+    <span class="doccomment">/// Disables the trust-dns async resolver.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This method exists even if the optional `trust-dns` feature is not enabled.</span>
+    <span class="doccomment">/// This can be used to ensure a `Client` doesn&#39;t use the trust-dns async resolver</span>
+    <span class="doccomment">/// even if another dependency were to enable the optional `trust-dns` feature.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">no_trust_dns</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ClientBuilder</span> {
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;trust-dns&quot;</span>)]</span>
+        {
+            <span class="self">self</span>.<span class="ident">trust_dns</span>(<span class="bool-val">false</span>)
+        }
+
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;trust-dns&quot;</span>))]</span>
+        {
+            <span class="self">self</span>
+        }
     }
 }
 
@@ -2091,9 +2432,16 @@
             }
         }
 
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">gzip</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="op">!</span><span class="ident">headers</span>.<span class="ident">contains_key</span>(<span class="ident">ACCEPT_ENCODING</span>) <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="op">!</span><span class="ident">headers</span>.<span class="ident">contains_key</span>(<span class="ident">RANGE</span>)
+        <span class="kw">let</span> <span class="ident">accept_encoding</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">accepts</span>.<span class="ident">as_str</span>();
+
+        <span class="kw">if</span> <span class="ident">accept_encoding</span>.<span class="ident">is_some</span>()
+            <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="op">!</span><span class="ident">headers</span>.<span class="ident">contains_key</span>(<span class="ident">ACCEPT_ENCODING</span>)
+            <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="op">!</span><span class="ident">headers</span>.<span class="ident">contains_key</span>(<span class="ident">RANGE</span>)
         {
-            <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="ident">ACCEPT_ENCODING</span>, <span class="ident">HeaderValue</span>::<span class="ident">from_static</span>(<span class="string">&quot;gzip&quot;</span>));
+            <span class="ident">headers</span>.<span class="ident">insert</span>(
+                <span class="ident">ACCEPT_ENCODING</span>,
+                <span class="ident">HeaderValue</span>::<span class="ident">from_static</span>(<span class="ident">accept_encoding</span>.<span class="ident">unwrap</span>()),
+            );
         }
 
         <span class="kw">let</span> <span class="ident">uri</span> <span class="op">=</span> <span class="ident">expect_uri</span>(<span class="kw-2">&amp;</span><span class="ident">url</span>);
@@ -2117,7 +2465,6 @@
         <span class="kw">let</span> <span class="ident">timeout</span> <span class="op">=</span> <span class="ident">timeout</span>
             .<span class="ident">or</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">request_timeout</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">dur</span><span class="op">|</span> <span class="ident">tokio</span>::<span class="ident">time</span>::<span class="ident">delay_for</span>(<span class="ident">dur</span>));
-
 
         <span class="kw-2">*</span><span class="ident">req</span>.<span class="ident">headers_mut</span>() <span class="op">=</span> <span class="ident">headers</span>.<span class="ident">clone</span>();
 
@@ -2196,7 +2543,7 @@
             }
         }
 
-        <span class="ident">f</span>.<span class="ident">field</span>(<span class="string">&quot;gzip&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">gzip</span>);
+        <span class="ident">f</span>.<span class="ident">field</span>(<span class="string">&quot;accepts&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">accepts</span>);
 
         <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">proxies</span>.<span class="ident">is_empty</span>() {
             <span class="ident">f</span>.<span class="ident">field</span>(<span class="string">&quot;proxies&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">proxies</span>);
@@ -2258,9 +2605,9 @@
 }
 
 <span class="kw">struct</span> <span class="ident">ClientRef</span> {
+    <span class="ident">accepts</span>: <span class="ident">Accepts</span>,
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cookies&quot;</span>)]</span>
     <span class="ident">cookie_store</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">RwLock</span><span class="op">&lt;</span><span class="ident">cookie</span>::<span class="ident">CookieStore</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">gzip</span>: <span class="ident">bool</span>,
     <span class="ident">headers</span>: <span class="ident">HeaderMap</span>,
     <span class="ident">hyper</span>: <span class="ident">HyperClient</span>,
     <span class="ident">redirect_policy</span>: <span class="ident">redirect</span>::<span class="ident">Policy</span>,
@@ -2282,7 +2629,7 @@
             }
         }
 
-        <span class="ident">f</span>.<span class="ident">field</span>(<span class="string">&quot;gzip&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">gzip</span>);
+        <span class="ident">f</span>.<span class="ident">field</span>(<span class="string">&quot;accepts&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">accepts</span>);
 
         <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">proxies</span>.<span class="ident">is_empty</span>() {
             <span class="ident">f</span>.<span class="ident">field</span>(<span class="string">&quot;proxies&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">proxies</span>);
@@ -2298,14 +2645,11 @@
 
         <span class="ident">f</span>.<span class="ident">field</span>(<span class="string">&quot;default_headers&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">headers</span>);
 
-
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">d</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">request_timeout</span> {
             <span class="ident">f</span>.<span class="ident">field</span>(<span class="string">&quot;timeout&quot;</span>, <span class="ident">d</span>);
         }
     }
 }
-
-
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">Pending</span> {
     <span class="ident">inner</span>: <span class="ident">PendingInner</span>,
@@ -2473,13 +2817,13 @@
 
                     <span class="kw">match</span> <span class="ident">action</span> {
                         <span class="ident">redirect</span>::<span class="ident">ActionKind</span>::<span class="ident">Follow</span> <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;redirecting &#39;{}&#39; to &#39;{}&#39;&quot;</span>, <span class="self">self</span>.<span class="ident">url</span>, <span class="ident">loc</span>);
                             <span class="self">self</span>.<span class="ident">url</span> <span class="op">=</span> <span class="ident">loc</span>;
 
                             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span>
                                 <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">replace</span>(<span class="self">self</span>.<span class="ident">as_mut</span>().<span class="ident">headers</span>(), <span class="ident">HeaderMap</span>::<span class="ident">new</span>());
 
                             <span class="ident">remove_sensitive_headers</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">headers</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">url</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">urls</span>);
-                            <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;redirecting to {:?} &#39;{}&#39;&quot;</span>, <span class="self">self</span>.<span class="ident">method</span>, <span class="self">self</span>.<span class="ident">url</span>);
                             <span class="kw">let</span> <span class="ident">uri</span> <span class="op">=</span> <span class="ident">expect_uri</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">url</span>);
                             <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">body</span> {
                                 <span class="prelude-val">Some</span>(<span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">body</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Body</span>::<span class="ident">reusable</span>(<span class="ident">body</span>.<span class="ident">clone</span>()),
@@ -2508,18 +2852,22 @@
                             <span class="kw">continue</span>;
                         }
                         <span class="ident">redirect</span>::<span class="ident">ActionKind</span>::<span class="ident">Stop</span> <span class="op">=</span><span class="op">&gt;</span> {
-                            <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;redirect_policy disallowed redirection to &#39;{}&#39;&quot;</span>, <span class="ident">loc</span>);
+                            <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;redirect policy disallowed redirection to &#39;{}&#39;&quot;</span>, <span class="ident">loc</span>);
                         }
                         <span class="ident">redirect</span>::<span class="ident">ActionKind</span>::<span class="ident">Error</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                            <span class="kw">return</span> <span class="ident">Poll</span>::<span class="ident">Ready</span>(<span class="prelude-val">Err</span>(<span class="kw">crate</span>::<span class="ident">error</span>::<span class="ident">redirect</span>(
-                                <span class="ident">err</span>,
-                                <span class="self">self</span>.<span class="ident">url</span>.<span class="ident">clone</span>(),
-                            )));
+                            <span class="kw">return</span> <span class="ident">Poll</span>::<span class="ident">Ready</span>(<span class="prelude-val">Err</span>(<span class="kw">crate</span>::<span class="ident">error</span>::<span class="ident">redirect</span>(<span class="ident">err</span>, <span class="self">self</span>.<span class="ident">url</span>.<span class="ident">clone</span>())));
                         }
                     }
                 }
             }
-            <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">Response</span>::<span class="ident">new</span>(<span class="ident">res</span>, <span class="self">self</span>.<span class="ident">url</span>.<span class="ident">clone</span>(), <span class="self">self</span>.<span class="ident">client</span>.<span class="ident">gzip</span>, <span class="self">self</span>.<span class="ident">timeout</span>.<span class="ident">take</span>());
+
+            <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;response &#39;{}&#39; for {}&quot;</span>, <span class="ident">res</span>.<span class="ident">status</span>(), <span class="self">self</span>.<span class="ident">url</span>);
+            <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">Response</span>::<span class="ident">new</span>(
+                <span class="ident">res</span>,
+                <span class="self">self</span>.<span class="ident">url</span>.<span class="ident">clone</span>(),
+                <span class="self">self</span>.<span class="ident">client</span>.<span class="ident">accepts</span>,
+                <span class="self">self</span>.<span class="ident">timeout</span>.<span class="ident">take</span>(),
+            );
             <span class="kw">return</span> <span class="ident">Poll</span>::<span class="ident">Ready</span>(<span class="prelude-val">Ok</span>(<span class="ident">res</span>));
         }
     }

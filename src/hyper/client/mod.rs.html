@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/hyper-0.13.2/src/client/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../hyper/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/hyper-0.13.3/src/client/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../hyper/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1136,6 +1136,38 @@
 <span id="1136">1136</span>
 <span id="1137">1137</span>
 <span id="1138">1138</span>
+<span id="1139">1139</span>
+<span id="1140">1140</span>
+<span id="1141">1141</span>
+<span id="1142">1142</span>
+<span id="1143">1143</span>
+<span id="1144">1144</span>
+<span id="1145">1145</span>
+<span id="1146">1146</span>
+<span id="1147">1147</span>
+<span id="1148">1148</span>
+<span id="1149">1149</span>
+<span id="1150">1150</span>
+<span id="1151">1151</span>
+<span id="1152">1152</span>
+<span id="1153">1153</span>
+<span id="1154">1154</span>
+<span id="1155">1155</span>
+<span id="1156">1156</span>
+<span id="1157">1157</span>
+<span id="1158">1158</span>
+<span id="1159">1159</span>
+<span id="1160">1160</span>
+<span id="1161">1161</span>
+<span id="1162">1162</span>
+<span id="1163">1163</span>
+<span id="1164">1164</span>
+<span id="1165">1165</span>
+<span id="1166">1166</span>
+<span id="1167">1167</span>
+<span id="1168">1168</span>
+<span id="1169">1169</span>
+<span id="1170">1170</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! HTTP Client</span>
 <span class="doccomment">//!</span>
@@ -1268,10 +1300,11 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">/// # #[cfg(feature  = &quot;runtime&quot;)]</span>
     <span class="doccomment">/// # fn run () {</span>
+    <span class="doccomment">/// use std::time::Duration;</span>
     <span class="doccomment">/// use hyper::Client;</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// let client = Client::builder()</span>
-    <span class="doccomment">///     .keep_alive(true)</span>
+    <span class="doccomment">///     .pool_idle_timeout(Duration::from_secs(30))</span>
     <span class="doccomment">///     .http2_only(true)</span>
     <span class="doccomment">///     .build_http();</span>
     <span class="doccomment">/// # let infer: Client&lt;_, hyper::Body&gt; = client;</span>
@@ -1981,10 +2014,11 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// # #[cfg(feature  = &quot;runtime&quot;)]</span>
 <span class="doccomment">/// # fn run () {</span>
+<span class="doccomment">/// use std::time::Duration;</span>
 <span class="doccomment">/// use hyper::Client;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// let client = Client::builder()</span>
-<span class="doccomment">///     .keep_alive(true)</span>
+<span class="doccomment">///     .pool_idle_timeout(Duration::from_secs(30))</span>
 <span class="doccomment">///     .http2_only(true)</span>
 <span class="doccomment">///     .build_http();</span>
 <span class="doccomment">/// # let infer: Client&lt;_, hyper::Body&gt; = client;</span>
@@ -2009,22 +2043,38 @@
             },
             <span class="ident">conn_builder</span>: <span class="ident">conn</span>::<span class="ident">Builder</span>::<span class="ident">new</span>(),
             <span class="ident">pool_config</span>: <span class="ident">pool</span>::<span class="ident">Config</span> {
-                <span class="ident">enabled</span>: <span class="bool-val">true</span>,
-                <span class="ident">keep_alive_timeout</span>: <span class="prelude-val">Some</span>(<span class="ident">Duration</span>::<span class="ident">from_secs</span>(<span class="number">90</span>)),
-                <span class="ident">max_idle_per_host</span>: ::<span class="ident">std</span>::<span class="ident">usize</span>::<span class="ident">MAX</span>,
+                <span class="ident">idle_timeout</span>: <span class="prelude-val">Some</span>(<span class="ident">Duration</span>::<span class="ident">from_secs</span>(<span class="number">90</span>)),
+                <span class="ident">max_idle_per_host</span>: <span class="ident">std</span>::<span class="ident">usize</span>::<span class="ident">MAX</span>,
             },
         }
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Builder</span> {
-    <span class="doccomment">/// Enable or disable keep-alive mechanics.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Default is enabled.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+    <span class="attribute">#[<span class="ident">deprecated</span>(
+        <span class="ident">note</span> <span class="op">=</span> <span class="string">&quot;name is confusing, to disable the connection pool, call pool_max_idle_per_host(0)&quot;</span>
+    )]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">keep_alive</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">val</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">pool_config</span>.<span class="ident">enabled</span> <span class="op">=</span> <span class="ident">val</span>;
-        <span class="self">self</span>
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">val</span> {
+            <span class="comment">// disable</span>
+            <span class="self">self</span>.<span class="ident">pool_max_idle_per_host</span>(<span class="number">0</span>)
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">pool_config</span>.<span class="ident">max_idle_per_host</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+            <span class="comment">// enable</span>
+            <span class="self">self</span>.<span class="ident">pool_max_idle_per_host</span>(<span class="ident">std</span>::<span class="ident">usize</span>::<span class="ident">MAX</span>)
+        } <span class="kw">else</span> {
+            <span class="comment">// already enabled</span>
+            <span class="self">self</span>
+        }
+    }
+
+    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+    <span class="attribute">#[<span class="ident">deprecated</span>(<span class="ident">note</span> <span class="op">=</span> <span class="string">&quot;renamed to `pool_idle_timeout`&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">keep_alive_timeout</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">val</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>
+    <span class="kw">where</span>
+        <span class="ident">D</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Duration</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    {
+        <span class="self">self</span>.<span class="ident">pool_idle_timeout</span>(<span class="ident">val</span>)
     }
 
     <span class="doccomment">/// Set an optional timeout for idle sockets being kept-alive.</span>
@@ -2032,14 +2082,29 @@
     <span class="doccomment">/// Pass `None` to disable timeout.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Default is 90 seconds.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">keep_alive_timeout</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">val</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pool_idle_timeout</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">val</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">D</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Duration</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     {
-        <span class="self">self</span>.<span class="ident">pool_config</span>.<span class="ident">keep_alive_timeout</span> <span class="op">=</span> <span class="ident">val</span>.<span class="ident">into</span>();
+        <span class="self">self</span>.<span class="ident">pool_config</span>.<span class="ident">idle_timeout</span> <span class="op">=</span> <span class="ident">val</span>.<span class="ident">into</span>();
         <span class="self">self</span>
     }
+
+    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+    <span class="attribute">#[<span class="ident">deprecated</span>(<span class="ident">note</span> <span class="op">=</span> <span class="string">&quot;renamed to `pool_max_idle_per_host`&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">max_idle_per_host</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">max_idle</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">pool_config</span>.<span class="ident">max_idle_per_host</span> <span class="op">=</span> <span class="ident">max_idle</span>;
+        <span class="self">self</span>
+    }
+
+    <span class="doccomment">/// Sets the maximum idle connection per host allowed in the pool.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Default is `usize::MAX` (no limit).</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pool_max_idle_per_host</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">max_idle</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">pool_config</span>.<span class="ident">max_idle_per_host</span> <span class="op">=</span> <span class="ident">max_idle</span>;
+        <span class="self">self</span>
+    }
+    <span class="comment">// HTTP/1 options</span>
 
     <span class="doccomment">/// Set whether HTTP/1 connections should try to use vectored writes,</span>
     <span class="doccomment">/// or always flatten into a single buffer.</span>
@@ -2049,7 +2114,6 @@
     <span class="doccomment">/// support vectored writes well, such as most TLS implementations.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Default is `true`.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">http1_writev</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">val</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">conn_builder</span>.<span class="ident">h1_writev</span>(<span class="ident">val</span>);
         <span class="self">self</span>
@@ -2060,7 +2124,6 @@
     <span class="doccomment">/// Note that setting this option unsets the `http1_max_buf_size` option.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Default is an adaptive read buffer.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">http1_read_buf_exact_size</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">sz</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">conn_builder</span>.<span class="ident">h1_read_buf_exact_size</span>(<span class="prelude-val">Some</span>(<span class="ident">sz</span>));
         <span class="self">self</span>
@@ -2075,7 +2138,6 @@
     <span class="doccomment">/// # Panics</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The minimum value allowed is 8192. This method panics if the passed `max` is less than the minimum.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">http1_max_buf_size</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">max</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">conn_builder</span>.<span class="ident">h1_max_buf_size</span>(<span class="ident">max</span>);
         <span class="self">self</span>
@@ -2135,11 +2197,13 @@
         <span class="self">self</span>
     }
 
-    <span class="doccomment">/// Sets the maximum idle connection per host allowed in the pool.</span>
+    <span class="doccomment">/// Sets whether to use an adaptive flow control.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// Default is `usize::MAX` (no limit).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">max_idle_per_host</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">max_idle</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">pool_config</span>.<span class="ident">max_idle_per_host</span> <span class="op">=</span> <span class="ident">max_idle</span>;
+    <span class="doccomment">/// Enabling this will override the limits set in</span>
+    <span class="doccomment">/// `http2_initial_stream_window_size` and</span>
+    <span class="doccomment">/// `http2_initial_connection_window_size`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">http2_adaptive_window</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">enabled</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">conn_builder</span>.<span class="ident">http2_adaptive_window</span>(<span class="ident">enabled</span>);
         <span class="self">self</span>
     }
 
@@ -2189,8 +2253,8 @@
         <span class="ident">B</span>::<span class="ident">Data</span>: <span class="ident">Send</span>,
     {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">connector</span> <span class="op">=</span> <span class="ident">HttpConnector</span>::<span class="ident">new</span>();
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">pool_config</span>.<span class="ident">enabled</span> {
-            <span class="ident">connector</span>.<span class="ident">set_keepalive</span>(<span class="self">self</span>.<span class="ident">pool_config</span>.<span class="ident">keep_alive_timeout</span>);
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">pool_config</span>.<span class="ident">is_enabled</span>() {
+            <span class="ident">connector</span>.<span class="ident">set_keepalive</span>(<span class="self">self</span>.<span class="ident">pool_config</span>.<span class="ident">idle_timeout</span>);
         }
         <span class="self">self</span>.<span class="ident">build</span>(<span class="ident">connector</span>)
     }
