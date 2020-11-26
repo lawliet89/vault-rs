@@ -10,7 +10,7 @@
     const_err,
     dead_code,
     deprecated,
-    exceeding_bitshifts,
+    arithmetic_overflow,
     improper_ctypes,
     missing_docs,
     mutable_transmutes,
@@ -349,9 +349,9 @@ impl Client {
         S3: AsRef<str>,
     {
         let address = Self::environment_variable_or_provided("VAULT_ADDR", address)
-            .ok_or_else(|| Error::MissingAddress)?;
+            .ok_or(Error::MissingAddress)?;
         let token = Self::environment_variable_or_provided("VAULT_TOKEN", token)
-            .ok_or_else(|| Error::MissingToken)?;
+            .ok_or(Error::MissingToken)?;
         let root_ca = Self::environment_variable_or_provided("VAULT_CACERT", ca_cert);
 
         let client = if let Some(cert) = root_ca {

@@ -195,11 +195,11 @@ where
     async fn list_keys(&self, path: &str) -> Result<Vec<String>, Error> {
         let path = format!("{}/keys", path);
         let data: Map<String, Value> = self.list(&path).await?.data()?;
-        let keys = data.get("keys").ok_or_else(|| Error::MalformedResponse)?;
-        let keys = keys.as_array().ok_or_else(|| Error::MalformedResponse)?;
+        let keys = data.get("keys").ok_or(Error::MalformedResponse)?;
+        let keys = keys.as_array().ok_or(Error::MalformedResponse)?;
         let keys: Result<Vec<&str>, Error> = keys
             .iter()
-            .map(|s| s.as_str().ok_or_else(|| Error::MalformedResponse))
+            .map(|s| s.as_str().ok_or(Error::MalformedResponse))
             .collect();
 
         Ok(keys?.iter().map(|s| (*s).to_string()).collect())
