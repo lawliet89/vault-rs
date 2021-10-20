@@ -178,7 +178,7 @@ mod tests {
     use super::*;
     use crate::sys::mounts::tests::Mount;
 
-    #[tokio::test(threaded_scheduler)]
+    #[tokio::test(flavor = "multi_thread")]
     async fn can_configure() {
         let client = crate::tests::vault_client();
 

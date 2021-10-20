@@ -188,7 +188,7 @@ pub(crate) mod tests {
         T: Vault + Send + Sync + Clone,
     {
         pub(crate) async fn new(client: &T, config: &SecretEngine) -> Self {
-            let response = Mounts::enable(&client, &config).await.unwrap();
+            let response = Mounts::enable(&client, config).await.unwrap();
             assert!(response.ok().unwrap().is_none());
             Mount {
                 path: config.path.clone(),
@@ -208,13 +208,13 @@ pub(crate) mod tests {
         }
     }
 
-    #[tokio::test(threaded_scheduler)]
+    #[tokio::test(flavor = "multi_thread")]
     async fn can_list_mounts() {
         let client = crate::tests::vault_client();
         let _ = Mounts::list(&client).await.unwrap();
     }
 
-    #[tokio::test(threaded_scheduler)]
+    #[tokio::test(flavor = "multi_thread")]
     async fn can_mount_and_unmount_kv() {
         let client = crate::tests::vault_client();
 

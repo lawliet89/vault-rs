@@ -459,7 +459,7 @@ where
     T: Vault + Send + Sync,
 {
     async fn read(&self, path: &str, method: Method) -> Result<Response, Error> {
-        T::read(&self, path, method).await
+        T::read(self, path, method).await
     }
 
     async fn read_with_query<Q: Serialize + Send + Sync + ?Sized>(
@@ -468,7 +468,7 @@ where
         method: Method,
         query: &Q,
     ) -> Result<Response, Error> {
-        T::read_with_query(&self, path, method, query).await
+        T::read_with_query(self, path, method, query).await
     }
 
     async fn write<P: Serialize + Send + Sync>(
@@ -478,7 +478,7 @@ where
         method: Method,
         response_expected: bool,
     ) -> Result<Response, Error> {
-        T::write(&self, path, payload, method, response_expected).await
+        T::write(self, path, payload, method, response_expected).await
     }
 }
 
